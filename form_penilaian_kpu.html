@@ -5,71 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Penilaian Pegawai Berprestasi KPU Karimun</title>
     
-    <!-- CSS Tailwind Compiled -->
+    <!-- CSS Tailwind -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
-    
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        
-        .star-rating {
-            display: inline-flex;
-            flex-direction: row-reverse;
-            justify-content: flex-end;
-        }
-        
-        .star-rating input {
-            display: none;
-        }
-        
-        .star-rating label {
-            color: #e5e7eb;
-            cursor: pointer;
-            font-size: 1.85rem;
-            padding: 0 0.15rem;
-            transition: color 0.15s ease-in-out, transform 0.15s ease-in-out;
-        }
-        
-        .star-rating label:hover,
-        .star-rating label:hover ~ label {
-            color: #f59e0b;
-            transform: scale(1.1);
-        }
-        
-        .star-rating input:checked ~ label {
-            color: #fbbf24;
-        }
-
-        .star-rating.disabled label {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        .star-rating.disabled label:hover,
-        .star-rating.disabled label:hover ~ label {
-            transform: none;
-            color: #e5e7eb;
-        }
-        
-        .star-rating.disabled input:checked ~ label {
-            color: #fbbf24;
-        }
-
-        .bg-maroon-custom {
-            background-color: #800000;
-        }
-
-        .text-maroon-custom {
-            color: #800000;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .star-rating { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; }
+        .star-rating input { display: none; }
+        .star-rating label { color: #e5e7eb; cursor: pointer; font-size: 1.85rem; padding: 0 0.15rem; transition: color 0.15s, transform 0.15s; }
+        .star-rating label:hover, .star-rating label:hover ~ label { color: #f59e0b; transform: scale(1.1); }
+        .star-rating input:checked ~ label { color: #fbbf24; }
+        .star-rating.disabled label { cursor: not-allowed; opacity: 0.7; }
+        .star-rating.disabled label:hover, .star-rating.disabled label:hover ~ label { transform: none; color: #e5e7eb; }
+        .star-rating.disabled input:checked ~ label { color: #fbbf24; }
+        .bg-maroon-custom { background-color: #800000; }
+        .text-maroon-custom { color: #800000; }
     </style>
 </head>
 <body class="text-gray-800 p-3 sm:p-6 md:p-10">
@@ -78,39 +32,59 @@
         
         <div class="bg-maroon-custom text-white p-6 sm:p-8 text-center relative border-b-4 border-yellow-500">
             <div class="flex justify-center items-center mb-4">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/KPU_Logo.svg" 
-                     alt="Logo KPU Resmi" 
-                     class="h-20 sm:h-24 object-contain filter drop-shadow-md"
-                     onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/KPU_Logo.svg/500px-KPU_Logo.svg.png';">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/KPU_Logo.svg" alt="Logo KPU" class="h-20 sm:h-24 object-contain filter drop-shadow-md">
             </div>
             <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide mb-1">FORM PENILAIAN PEGAWAI BERPRESTASI</h1>
             <h2 class="text-base sm:text-lg font-medium text-red-100 tracking-wider">SEKRETARIAT KPU KABUPATEN KARIMUN</h2>
         </div>
 
         <form id="appraisalForm" onsubmit="event.preventDefault();" class="p-6 sm:p-8 md:p-10">
-            <input type="hidden" id="rowIndex" name="rowIndex">
 
-            <!-- Alert Notifikasi Pegawai Sudah Dinilai -->
-            <div id="alreadyEvaluatedBanner" class="hidden mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 flex items-center gap-3">
-                <i class="fas fa-check-circle text-2xl text-green-600"></i>
+            <!-- Banner Notifikasi -->
+            <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border flex items-center gap-3">
+                <i id="statusIcon" class="text-2xl"></i>
                 <div>
-                    <h5 class="font-bold">Pegawai Sudah Dinilai!</h5>
-                    <p class="text-xs text-green-700">Data nilai pegawai ini telah tersimpan di sistem. Anda tidak dapat mengubah penilaian lagi.</p>
+                    <h5 id="statusTitle" class="font-bold"></h5>
+                    <p id="statusText" class="text-xs"></p>
                 </div>
             </div>
 
-            <!-- Data Metadata -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Penilai -->
+                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2 flex items-center">
+                        <i class="fas fa-user-check mr-2 text-maroon-custom"></i>Data Penilai (Kasubbag)
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Penilai</label>
+                            <select id="nama_penilai" onchange="onFormStateChange()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
+                                <option value="">-- Memuat Penilai... --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Jabatan Penilai</label>
+                            <input type="text" id="jabatan_penilai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Periode Penilaian</label>
+                            <select id="periode" onchange="onFormStateChange()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
+                                <option value="">-- Memuat Periode... --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pegawai -->
                 <div class="bg-red-50 p-5 rounded-xl border border-red-100">
                     <h3 class="text-lg font-bold text-maroon-custom mb-4 border-b border-red-200 pb-2 flex items-center">
                         <i class="fas fa-id-card mr-2"></i>Data Pegawai Yang Dinilai
                     </h3>
-                    
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Pegawai</label>
-                            <select id="nama_pegawai" name="nama_pegawai" onchange="onSelectPegawai()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
-                                <option value="">-- Memuat Data Pegawai... --</option>
+                            <select id="nama_pegawai" onchange="onFormStateChange()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
+                                <option value="">-- Memuat Pegawai... --</option>
                             </select>
                         </div>
                         <div>
@@ -118,38 +92,23 @@
                             <input type="text" id="nip_pegawai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Pangkat / Golongan</label>
-                            <input type="text" id="pangkat_pegawai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
-                        </div>
-                        <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Subbagian / Unit Kerja</label>
                             <input type="text" id="unit_kerja" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2 flex items-center">
-                        <i class="fas fa-user-check mr-2 text-maroon-custom"></i>Data Penilai & Periode
-                    </h3>
-                    
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Periode Penilaian</label>
-                            <select id="periode" name="periode" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
-                                <option value="">-- Memuat Periode... --</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Penilai</label>
-                            <select id="nama_penilai" name="nama_penilai" onchange="onSelectPenilai()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
-                                <option value="">-- Memuat Data Penilai... --</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Jabatan Penilai</label>
-                            <input type="text" id="jabatan_penilai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
-                        </div>
+            <!-- Total Akumulasi Keseluruhan Kasubbag -->
+            <div id="accumulationBox" class="hidden mb-8 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Total Akumulasi Seluruh Kasubbag</span>
+                        <h4 id="accumulationCountText" class="text-sm font-semibold text-blue-900">Sudah dinilai oleh 0 Kasubbag</h4>
+                    </div>
+                    <div class="text-right">
+                        <span id="accumulationTotalScore" class="text-2xl font-black text-blue-700">0</span>
+                        <span class="text-xs font-bold text-blue-500">Poin Akumulasi</span>
                     </div>
                 </div>
             </div>
@@ -322,14 +281,14 @@
                 </div>
             </div>
 
-            <!-- Ringkasan Nilai -->
+            <!-- Ringkasan Nilai Inputan Kasubbag Aktif -->
             <div class="mt-8 bg-red-50 p-5 rounded-xl border border-red-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
-                    <h4 class="text-lg font-bold text-gray-900">Ringkasan Nilai Akhir</h4>
-                    <p class="text-xs text-gray-600">Akumulasi otomatis seluruh indikator.</p>
+                    <h4 class="text-lg font-bold text-gray-900">Skor Inputan Penilai</h4>
+                    <p class="text-xs text-gray-600">Total nilai yang diberikan oleh Penilai terpilih saat ini.</p>
                 </div>
                 <div class="text-center sm:text-right bg-white px-6 py-3 rounded-lg border border-red-200 shadow-sm">
-                    <span class="text-xs text-gray-500 uppercase font-semibold block">Total Skor</span>
+                    <span class="text-xs text-gray-500 uppercase font-semibold block">Total Skor Input</span>
                     <span class="text-3xl font-extrabold text-maroon-custom" id="totalScore">0</span>
                     <span class="text-gray-500 font-bold text-sm"> / 80</span>
                 </div>
@@ -348,12 +307,10 @@
 
         let globalPegawaiData = [];
         let globalPenilaiData = [];
+        let globalLogs = [];
 
         document.addEventListener('DOMContentLoaded', function() {
-            fetch(API_URL, {
-                method: 'GET',
-                redirect: 'follow'
-            })
+            fetch(API_URL, { method: 'GET', redirect: 'follow' })
             .then(res => res.json())
             .then(res => {
                 if (res.status === 'success') {
@@ -364,26 +321,21 @@
             })
             .catch(err => {
                 console.error(err);
-                alert('Gagal mengambil data dari Google Apps Script.');
+                alert('Gagal mengambil data dari Web App.');
             });
         });
 
         function onDataLoaded(data) {
             globalPegawaiData = data.pegawai || [];
             globalPenilaiData = data.penilai || [];
+            globalLogs = data.logs || [];
 
-            const selectPegawai = document.getElementById('nama_pegawai');
-            selectPegawai.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
-            globalPegawaiData.forEach((peg, index) => {
-                // Beri simbol centang jika pegawai sudah dinilai
-                const prefix = peg.isEvaluated ? '✓ ' : '';
-                selectPegawai.innerHTML += `<option value="${index}">${prefix}${peg.nama}</option>`;
-            });
+            renderPegawaiDropdown();
 
             const selectPenilai = document.getElementById('nama_penilai');
             selectPenilai.innerHTML = '<option value="">-- Pilih Penilai --</option>';
-            globalPenilaiData.forEach((pen, index) => {
-                selectPenilai.innerHTML += `<option value="${index}">${pen.nama}</option>`;
+            globalPenilaiData.forEach((pen, i) => {
+                selectPenilai.innerHTML += `<option value="${pen.nama}">${pen.nama}</option>`;
             });
 
             const selectPeriode = document.getElementById('periode');
@@ -395,8 +347,31 @@
             }
         }
 
-        function resetFormState() {
-            document.getElementById('alreadyEvaluatedBanner').classList.add('hidden');
+        function renderPegawaiDropdown() {
+            const currentPenilai = document.getElementById('nama_penilai').value;
+            const currentPeriode = document.getElementById('periode').value;
+            const selectPegawai = document.getElementById('nama_pegawai');
+            selectPegawai.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+
+            globalPegawaiData.forEach((peg) => {
+                // Tandai centang [✓] jika Kasubbag yang terpilih SUDAH menilai pegawai ini pada periode tersebut
+                let alreadyEvaluatedByThisPenilai = false;
+                if (currentPenilai && currentPeriode) {
+                    alreadyEvaluatedByThisPenilai = globalLogs.some(l => 
+                        l.penilai === currentPenilai && 
+                        l.pegawai === peg.nama && 
+                        l.periode === currentPeriode
+                    );
+                }
+
+                const prefix = alreadyEvaluatedByThisPenilai ? '✓ ' : '';
+                selectPegawai.innerHTML += `<option value="${peg.nama}">${prefix}${peg.nama}</option>`;
+            });
+        }
+
+        function resetFormInputs() {
+            document.getElementById('statusBanner').classList.add('hidden');
+            document.getElementById('accumulationBox').classList.add('hidden');
             document.getElementById('btnSubmit').disabled = false;
             document.getElementById('btnSubmit').classList.remove('opacity-50', 'cursor-not-allowed');
 
@@ -412,62 +387,101 @@
             calculateTotal();
         }
 
-        function setFormDisabledState() {
-            document.getElementById('alreadyEvaluatedBanner').classList.remove('hidden');
-            document.getElementById('btnSubmit').disabled = true;
-            document.getElementById('btnSubmit').classList.add('opacity-50', 'cursor-not-allowed');
+        function onFormStateChange() {
+            resetFormInputs();
 
-            for (let i = 1; i <= 8; i++) {
-                const radios = document.getElementsByName('P' + i);
-                radios.forEach(r => r.disabled = true);
-                document.getElementById(`star-container-P${i}`).classList.add('disabled');
+            const selectedPenilai = document.getElementById('nama_penilai').value;
+            const selectedPegawai = document.getElementById('nama_pegawai').value;
+            const selectedPeriode = document.getElementById('periode').value;
+
+            // Auto fill Jabatan Penilai
+            if (selectedPenilai) {
+                const penObj = globalPenilaiData.find(p => p.nama === selectedPenilai);
+                if (penObj) document.getElementById('jabatan_penilai').value = penObj.jabatan;
+            } else {
+                document.getElementById('jabatan_penilai').value = '';
             }
-        }
 
-        function onSelectPegawai() {
-            resetFormState();
-            
-            const index = document.getElementById('nama_pegawai').value;
-            if (index !== "") {
-                const peg = globalPegawaiData[index];
-                document.getElementById('nip_pegawai').value = peg.nip;
-                document.getElementById('pangkat_pegawai').value = peg.golongan;
-                document.getElementById('unit_kerja').value = peg.subbagian;
-                document.getElementById('rowIndex').value = peg.rowIndex;
-                if (peg.periode) document.getElementById('periode').value = peg.periode;
-
-                // Jika pegawai sudah dinilai
-                if (peg.isEvaluated) {
-                    // Tampilkan nilai yang tersimpan
-                    if (peg.scores && peg.scores.length === 8) {
-                        for (let i = 1; i <= 8; i++) {
-                            const val = peg.scores[i - 1];
-                            const radio = document.querySelector(`input[name="P${i}"][value="${val}"]`);
-                            if (radio) radio.checked = true;
-                            document.getElementById(`val-P${i}`).textContent = val;
-                        }
-                        calculateTotal();
+            // Auto fill Detail Pegawai
+            if (selectedPegawai) {
+                const pegObj = globalPegawaiData.find(p => p.nama === selectedPegawai);
+                if (pegObj) {
+                    document.getElementById('nip_pegawai').value = pegObj.nip;
+                    document.getElementById('unit_kerja').value = pegObj.subbagian;
+                    if (pegObj.periode && !selectedPeriode) {
+                        document.getElementById('periode').value = pegObj.periode;
                     }
-                    
-                    // Kunci form agar tidak bisa diubah
-                    setFormDisabledState();
-                    alert(`Pegawai "${peg.nama}" sudah pernah dinilai! Penilaian tidak dapat diubah lagi.`);
                 }
             } else {
                 document.getElementById('nip_pegawai').value = '';
-                document.getElementById('pangkat_pegawai').value = '';
                 document.getElementById('unit_kerja').value = '';
-                document.getElementById('rowIndex').value = '';
+            }
+
+            // Refresh tanda [✓] di dropdown pegawai sesuai penilai terpilih
+            renderPegawaiDropdown();
+            if (selectedPegawai) {
+                document.getElementById('nama_pegawai').value = selectedPegawai;
+            }
+
+            // Tampilkan Rekap Akumulasi Seluruh Kasubbag untuk pegawai ini
+            if (selectedPegawai && selectedPeriode) {
+                const logsForPegawai = globalLogs.filter(l => l.pegawai === selectedPegawai && l.periode === selectedPeriode);
+                if (logsForPegawai.length > 0) {
+                    let totalAccumulatedScore = 0;
+                    logsForPegawai.forEach(l => {
+                        totalAccumulatedScore += l.scores.reduce((a, b) => a + b, 0);
+                    });
+                    
+                    document.getElementById('accumulationBox').classList.remove('hidden');
+                    document.getElementById('accumulationCountText').textContent = `Pegawai ini telah dinilai oleh ${logsForPegawai.length} Kasubbag pada periode ${selectedPeriode}`;
+                    document.getElementById('accumulationTotalScore').textContent = totalAccumulatedScore;
+                }
+            }
+
+            // Cek apakah Kasubbag terpilih SUDAH menilai Pegawai terpilih
+            if (selectedPenilai && selectedPegawai && selectedPeriode) {
+                const existingLog = globalLogs.find(l => 
+                    l.penilai === selectedPenilai && 
+                    l.pegawai === selectedPegawai && 
+                    l.periode === selectedPeriode
+                );
+
+                if (existingLog) {
+                    // Tampilkan nilai yang pernah diinputkan oleh Kasubbag ini
+                    for (let i = 1; i <= 8; i++) {
+                        const val = existingLog.scores[i - 1];
+                        const radio = document.querySelector(`input[name="P${i}"][value="${val}"]`);
+                        if (radio) radio.checked = true;
+                        document.getElementById(`val-P${i}`).textContent = val;
+                        
+                        // Disable input bintang
+                        const radios = document.getElementsByName('P' + i);
+                        radios.forEach(r => r.disabled = true);
+                        document.getElementById(`star-container-P${i}`).classList.add('disabled');
+                    }
+                    calculateTotal();
+
+                    // Kunci tombol simpan & tampilkan banner
+                    showBanner('already', `Anda (${selectedPenilai}) sudah pernah memberikan nilai untuk ${selectedPegawai}. Data tidak dapat diubah lagi.`);
+                    document.getElementById('btnSubmit').disabled = true;
+                    document.getElementById('btnSubmit').classList.add('opacity-50', 'cursor-not-allowed');
+                }
             }
         }
 
-        function onSelectPenilai() {
-            const index = document.getElementById('nama_penilai').value;
-            if (index !== "") {
-                const pen = globalPenilaiData[index];
-                document.getElementById('jabatan_penilai').value = pen.jabatan;
-            } else {
-                document.getElementById('jabatan_penilai').value = '';
+        function showBanner(type, message) {
+            const banner = document.getElementById('statusBanner');
+            const icon = document.getElementById('statusIcon');
+            const title = document.getElementById('statusTitle');
+            const text = document.getElementById('statusText');
+
+            banner.classList.remove('hidden', 'bg-green-50', 'border-green-200', 'text-green-800', 'bg-amber-50', 'border-amber-200', 'text-amber-800');
+
+            if (type === 'already') {
+                banner.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
+                icon.className = 'fas fa-exclamation-triangle text-2xl text-amber-600';
+                title.textContent = 'Penilaian Terkunci!';
+                text.textContent = message;
             }
         }
 
@@ -480,8 +494,7 @@
                     break;
                 }
             }
-            const scoreDisplay = document.getElementById(`val-${variableName}`);
-            if (scoreDisplay) scoreDisplay.textContent = selectedValue;
+            document.getElementById(`val-${variableName}`).textContent = selectedValue;
             calculateTotal();
         }
 
@@ -495,22 +508,20 @@
         }
 
         function submitForm() {
-            const pegawaiIndex = document.getElementById('nama_pegawai').value;
-            if (pegawaiIndex === "") {
-                alert('Pilih Nama Pegawai terlebih dahulu!');
-                return;
-            }
+            const penilai = document.getElementById('nama_penilai').value;
+            const pegawai = document.getElementById('nama_pegawai').value;
+            const periode = document.getElementById('periode').value;
 
-            const peg = globalPegawaiData[pegawaiIndex];
-            if (peg && peg.isEvaluated) {
-                alert('Pegawai ini sudah dinilai dan tidak bisa diisi ulang!');
-                return;
-            }
+            if (!penilai) return alert('Pilih Nama Penilai terlebih dahulu!');
+            if (!pegawai) return alert('Pilih Nama Pegawai terlebih dahulu!');
+            if (!periode) return alert('Pilih Periode terlebih dahulu!');
 
             let formData = {
-                rowIndex: document.getElementById('rowIndex').value
+                nama_penilai: penilai,
+                nama_pegawai: pegawai,
+                periode: periode
             };
-            
+
             for (let i = 1; i <= 8; i++) {
                 let checked = document.querySelector(`input[name="P${i}"]:checked`);
                 if (!checked) {
@@ -526,9 +537,7 @@
 
             fetch(API_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
+                headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(formData),
                 redirect: 'follow'
             })
@@ -538,7 +547,7 @@
                 btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
 
                 if (res.status === 'success') {
-                    alert('Data penilaian berhasil disimpan ke Spreadsheet!');
+                    alert('Data penilaian berhasil disimpan!');
                     location.reload();
                 } else {
                     alert('Gagal menyimpan: ' + res.message);
@@ -547,7 +556,7 @@
             .catch(err => {
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
-                alert('Terjadi kesalahan jaringan atau server. Silakan muat ulang halaman.');
+                alert('Terjadi kesalahan jaringan atau server.');
             });
         }
     </script>

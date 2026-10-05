@@ -299,304 +299,308 @@
         </form>
     </div>
 
-   <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwXGirPwTSp_Q8hlvNeQrPoYMCKD3fw9t-kUEUHNdsDOG4gSpxb_v7KfOtxToqDB8bpuw/exec';
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwXGirPwTSp_Q8hlvNeQrPoYMCKD3fw9t-kUEUHNdsDOG4gSpxb_v7KfOtxToqDB8bpuw/exec';
 
-        let globalPegawaiData = [];
-        let globalPenilaiData = [];
-        let globalLogs = [];
+    let globalPegawaiData = [];
+    let globalPenilaiData = [];
+    let globalLogs = [];
 
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch(API_URL, { method: 'GET', redirect: 'follow' })
-            .then(res => res.json())
-            .then(res => {
-                if (res.status === 'success') {
-                    onDataLoaded(res.data);
-                } else {
-                    alert('Gagal memuat data: ' + res.message);
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Gagal mengambil data dari Web App.');
-            });
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch(API_URL, { method: 'GET', redirect: 'follow' })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+                onDataLoaded(res.data);
+            } else {
+                alert('Gagal memuat data: ' + res.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Gagal mengambil data dari Web App.');
         });
+    });
 
-        function onDataLoaded(data) {
-            globalPegawaiData = data.pegawai || [];
-            globalPenilaiData = data.penilai || [];
-            globalLogs = data.logs || [];
+    function onDataLoaded(data) {
+        globalPegawaiData = data.pegawai || [];
+        globalPenilaiData = data.penilai || [];
+        globalLogs = data.logs || [];
 
-            renderPegawaiDropdown();
+        renderPegawaiDropdown();
 
-            const selectPenilai = document.getElementById('nama_penilai');
-            if (selectPenilai) {
-                selectPenilai.innerHTML = '<option value="">-- Pilih Penilai --</option>';
-                globalPenilaiData.forEach((pen) => {
-                    selectPenilai.innerHTML += `<option value="${pen.nama}">${pen.nama}</option>`;
+        const selectPenilai = document.getElementById('nama_penilai');
+        if (selectPenilai) {
+            selectPenilai.innerHTML = '<option value="">-- Pilih Penilai --</option>';
+            globalPenilaiData.forEach((pen) => {
+                selectPenilai.innerHTML += `<option value="${pen.nama}">${pen.nama}</option>`;
+            });
+        }
+
+        const selectPeriode = document.getElementById('periode');
+        if (selectPeriode) {
+            selectPeriode.innerHTML = '<option value="">-- Pilih Periode --</option>';
+            if (data.periodeList && data.periodeList.length > 0) {
+                data.periodeList.forEach(p => {
+                    selectPeriode.innerHTML += `<option value="${p}">${p}</option>`;
                 });
             }
+        }
+    }
 
-            const selectPeriode = document.getElementById('periode');
-            if (selectPeriode) {
-                selectPeriode.innerHTML = '<option value="">-- Pilih Periode --</option>';
-                if (data.periodeList && data.periodeList.length > 0) {
-                    data.periodeList.forEach(p => {
-                        selectPeriode.innerHTML += `<option value="${p}">${p}</option>`;
-                    });
+    function renderPegawaiDropdown() {
+        const selectPenilai = document.getElementById('nama_penilai');
+        const selectPeriode = document.getElementById('periode');
+        const selectPegawai = document.getElementById('nama_pegawai');
+        
+        if (!selectPegawai) return;
+
+        const currentPenilai = selectPenilai ? selectPenilai.value : '';
+        const currentPeriode = selectPeriode ? selectPeriode.value : '';
+
+        selectPegawai.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+
+        globalPegawaiData.forEach((peg) => {
+            let alreadyEvaluatedByThisPenilai = false;
+            if (currentPenilai && currentPeriode) {
+                alreadyEvaluatedByThisPenilai = globalLogs.some(l => 
+                    l.penilai === currentPenilai && 
+                    l.pegawai === peg.nama && 
+                    l.periode === currentPeriode
+                );
+            }
+
+            const prefix = alreadyEvaluatedByThisPenilai ? '✓ ' : '';
+            selectPegawai.innerHTML += `<option value="${peg.nama}">${prefix}${peg.nama}</option>`;
+        });
+    }
+
+    function resetFormInputs() {
+        const statusBanner = document.getElementById('statusBanner');
+        if (statusBanner) statusBanner.classList.add('hidden');
+
+        const accumulationBox = document.getElementById('accumulationBox');
+        if (accumulationBox) accumulationBox.classList.add('hidden');
+
+        const btnSubmit = document.getElementById('btnSubmit');
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        // Disesuaikan hanya sampai P7
+        for (let i = 1; i <= 7; i++) {
+            const radios = document.getElementsByName('P' + i);
+            radios.forEach(r => {
+                r.checked = false;
+                r.disabled = false;
+            });
+
+            const starContainer = document.getElementById(`star-container-P${i}`);
+            if (starContainer) starContainer.classList.remove('disabled');
+
+            const valLabel = document.getElementById(`val-P${i}`);
+            if (valLabel) valLabel.textContent = '0';
+        }
+        calculateTotal();
+    }
+
+    function onFormStateChange() {
+        resetFormInputs();
+
+        const selectedPenilai = document.getElementById('nama_penilai') ? document.getElementById('nama_penilai').value : '';
+        const selectedPegawai = document.getElementById('nama_pegawai') ? document.getElementById('nama_pegawai').value : '';
+        const selectedPeriode = document.getElementById('periode') ? document.getElementById('periode').value : '';
+
+        if (selectedPenilai) {
+            const penObj = globalPenilaiData.find(p => p.nama === selectedPenilai);
+            if (penObj && document.getElementById('jabatan_penilai')) {
+                document.getElementById('jabatan_penilai').value = penObj.jabatan;
+            }
+        } else if (document.getElementById('jabatan_penilai')) {
+            document.getElementById('jabatan_penilai').value = '';
+        }
+
+        if (selectedPegawai) {
+            const pegObj = globalPegawaiData.find(p => p.nama === selectedPegawai);
+            if (pegObj) {
+                if (document.getElementById('nip_pegawai')) document.getElementById('nip_pegawai').value = pegObj.nip;
+                if (document.getElementById('unit_kerja')) document.getElementById('unit_kerja').value = pegObj.subbagian;
+                if (pegObj.periode && !selectedPeriode && document.getElementById('periode')) {
+                    document.getElementById('periode').value = pegObj.periode;
                 }
+            }
+        } else {
+            if (document.getElementById('nip_pegawai')) document.getElementById('nip_pegawai').value = '';
+            if (document.getElementById('unit_kerja')) document.getElementById('unit_kerja').value = '';
+        }
+
+        renderPegawaiDropdown();
+        if (selectedPegawai && document.getElementById('nama_pegawai')) {
+            document.getElementById('nama_pegawai').value = selectedPegawai;
+        }
+
+        if (selectedPegawai && selectedPeriode) {
+            const logsForPegawai = globalLogs.filter(l => l.pegawai === selectedPegawai && l.periode === selectedPeriode);
+            if (logsForPegawai.length > 0) {
+                let totalAccumulatedScore = 0;
+                logsForPegawai.forEach(l => {
+                    totalAccumulatedScore += l.scores.reduce((a, b) => a + b, 0);
+                });
+                
+                const accumBox = document.getElementById('accumulationBox');
+                if (accumBox) accumBox.classList.remove('hidden');
+                
+                const countText = document.getElementById('accumulationCountText');
+                if (countText) countText.textContent = `Pegawai ini telah dinilai oleh ${logsForPegawai.length} Kasubbag pada periode ${selectedPeriode}`;
+                
+                const totalText = document.getElementById('accumulationTotalScore');
+                if (totalText) totalText.textContent = totalAccumulatedScore;
             }
         }
 
-        function renderPegawaiDropdown() {
-            const selectPenilai = document.getElementById('nama_penilai');
-            const selectPeriode = document.getElementById('periode');
-            const selectPegawai = document.getElementById('nama_pegawai');
-            
-            if (!selectPegawai) return;
+        if (selectedPenilai && selectedPegawai && selectedPeriode) {
+            const existingLog = globalLogs.find(l => 
+                l.penilai === selectedPenilai && 
+                l.pegawai === selectedPegawai && 
+                l.periode === selectedPeriode
+            );
 
-            const currentPenilai = selectPenilai ? selectPenilai.value : '';
-            const currentPeriode = selectPeriode ? selectPeriode.value : '';
-
-            selectPegawai.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
-
-            globalPegawaiData.forEach((peg) => {
-                let alreadyEvaluatedByThisPenilai = false;
-                if (currentPenilai && currentPeriode) {
-                    alreadyEvaluatedByThisPenilai = globalLogs.some(l => 
-                        l.penilai === currentPenilai && 
-                        l.pegawai === peg.nama && 
-                        l.periode === currentPeriode
-                    );
+            if (existingLog) {
+                // Disesuaikan hanya sampai P7
+                for (let i = 1; i <= 7; i++) {
+                    const val = existingLog.scores[i - 1];
+                    const radio = document.querySelector(`input[name="P${i}"][value="${val}"]`);
+                    if (radio) radio.checked = true;
+                    
+                    const valLabel = document.getElementById(`val-P${i}`);
+                    if (valLabel) valLabel.textContent = val;
+                    
+                    const radios = document.getElementsByName('P' + i);
+                    radios.forEach(r => r.disabled = true);
+                    
+                    const starContainer = document.getElementById(`star-container-P${i}`);
+                    if (starContainer) starContainer.classList.add('disabled');
                 }
+                calculateTotal();
 
-                const prefix = alreadyEvaluatedByThisPenilai ? '✓ ' : '';
-                selectPegawai.innerHTML += `<option value="${peg.nama}">${prefix}${peg.nama}</option>`;
-            });
+                showBanner('already', `Anda (${selectedPenilai}) sudah pernah memberikan nilai untuk ${selectedPegawai}. Data tidak dapat diubah lagi.`);
+                
+                const btnSubmit = document.getElementById('btnSubmit');
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }
+    }
+
+    function showBanner(type, message) {
+        const banner = document.getElementById('statusBanner');
+        const icon = document.getElementById('statusIcon');
+        const title = document.getElementById('statusTitle');
+        const text = document.getElementById('statusText');
+
+        if (!banner || !icon || !title || !text) return;
+
+        banner.classList.remove('hidden', 'bg-green-50', 'border-green-200', 'text-green-800', 'bg-amber-50', 'border-amber-200', 'text-amber-800');
+
+        if (type === 'already') {
+            banner.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
+            icon.className = 'fas fa-exclamation-triangle text-2xl text-amber-600';
+            title.textContent = 'Penilaian Terkunci!';
+            text.textContent = message;
+        }
+    }
+
+    function updateScore(variableName) {
+        const radios = document.getElementsByName(variableName);
+        let selectedValue = 0;
+        for (const radio of radios) {
+            if (radio.checked) {
+                selectedValue = parseInt(radio.value, 10);
+                break;
+            }
+        }
+        const scoreDisplay = document.getElementById(`val-${variableName}`);
+        if (scoreDisplay) scoreDisplay.textContent = selectedValue;
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        // Disesuaikan hanya sampai P7
+        for (let i = 1; i <= 7; i++) {
+            const checked = document.querySelector(`input[name="P${i}"]:checked`);
+            if (checked) total += parseInt(checked.value, 10);
+        }
+        const totalScoreElem = document.getElementById('totalScore');
+        if (totalScoreElem) totalScoreElem.textContent = total;
+    }
+
+    function submitForm() {
+        const penilaiElem = document.getElementById('nama_penilai');
+        const pegawaiElem = document.getElementById('nama_pegawai');
+        const periodeElem = document.getElementById('periode');
+
+        const penilai = penilaiElem ? penilaiElem.value : '';
+        const pegawai = pegawaiElem ? pegawaiElem.value : '';
+        const periode = periodeElem ? periodeElem.value : '';
+
+        if (!penilai) return alert('Pilih Nama Penilai terlebih dahulu!');
+        if (!pegawai) return alert('Pilih Nama Pegawai terlebih dahulu!');
+        if (!periode) return alert('Pilih Periode terlebih dahulu!');
+
+        let formData = {
+            nama_penilai: penilai,
+            nama_pegawai: pegawai,
+            periode: periode
+        };
+
+        // Mengambil data input P1 sampai P7
+        for (let i = 1; i <= 7; i++) {
+            let checked = document.querySelector(`input[name="P${i}"]:checked`);
+            if (!checked) {
+                alert(`Bintang indikator nomor ${i} belum dipilih!`);
+                return;
+            }
+            formData['P' + i] = parseInt(checked.value, 10);
         }
 
-        function resetFormInputs() {
-            const statusBanner = document.getElementById('statusBanner');
-            if (statusBanner) statusBanner.classList.add('hidden');
+        const btnSubmit = document.getElementById('btnSubmit');
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+        }
 
-            const accumulationBox = document.getElementById('accumulationBox');
-            if (accumulationBox) accumulationBox.classList.add('hidden');
-
-            const btnSubmit = document.getElementById('btnSubmit');
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(formData),
+            redirect: 'follow'
+        })
+        .then(res => res.json())
+        .then(res => {
             if (btnSubmit) {
                 btnSubmit.disabled = false;
-                btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
             }
 
-            for (let i = 1; i <= 8; i++) {
-                const radios = document.getElementsByName('P' + i);
-                radios.forEach(r => {
-                    r.checked = false;
-                    r.disabled = false;
-                });
-
-                const starContainer = document.getElementById(`star-container-P${i}`);
-                if (starContainer) starContainer.classList.remove('disabled');
-
-                const valLabel = document.getElementById(`val-P${i}`);
-                if (valLabel) valLabel.textContent = '0';
-            }
-            calculateTotal();
-        }
-
-        function onFormStateChange() {
-            resetFormInputs();
-
-            const selectedPenilai = document.getElementById('nama_penilai') ? document.getElementById('nama_penilai').value : '';
-            const selectedPegawai = document.getElementById('nama_pegawai') ? document.getElementById('nama_pegawai').value : '';
-            const selectedPeriode = document.getElementById('periode') ? document.getElementById('periode').value : '';
-
-            if (selectedPenilai) {
-                const penObj = globalPenilaiData.find(p => p.nama === selectedPenilai);
-                if (penObj && document.getElementById('jabatan_penilai')) {
-                    document.getElementById('jabatan_penilai').value = penObj.jabatan;
-                }
-            } else if (document.getElementById('jabatan_penilai')) {
-                document.getElementById('jabatan_penilai').value = '';
-            }
-
-            if (selectedPegawai) {
-                const pegObj = globalPegawaiData.find(p => p.nama === selectedPegawai);
-                if (pegObj) {
-                    if (document.getElementById('nip_pegawai')) document.getElementById('nip_pegawai').value = pegObj.nip;
-                    if (document.getElementById('unit_kerja')) document.getElementById('unit_kerja').value = pegObj.subbagian;
-                    if (pegObj.periode && !selectedPeriode && document.getElementById('periode')) {
-                        document.getElementById('periode').value = pegObj.periode;
-                    }
-                }
+            if (res.status === 'success') {
+                alert('Data penilaian berhasil disimpan!');
+                location.reload();
             } else {
-                if (document.getElementById('nip_pegawai')) document.getElementById('nip_pegawai').value = '';
-                if (document.getElementById('unit_kerja')) document.getElementById('unit_kerja').value = '';
+                alert('Gagal menyimpan: ' + res.message);
             }
-
-            renderPegawaiDropdown();
-            if (selectedPegawai && document.getElementById('nama_pegawai')) {
-                document.getElementById('nama_pegawai').value = selectedPegawai;
-            }
-
-            if (selectedPegawai && selectedPeriode) {
-                const logsForPegawai = globalLogs.filter(l => l.pegawai === selectedPegawai && l.periode === selectedPeriode);
-                if (logsForPegawai.length > 0) {
-                    let totalAccumulatedScore = 0;
-                    logsForPegawai.forEach(l => {
-                        totalAccumulatedScore += l.scores.reduce((a, b) => a + b, 0);
-                    });
-                    
-                    const accumBox = document.getElementById('accumulationBox');
-                    if (accumBox) accumBox.classList.remove('hidden');
-                    
-                    const countText = document.getElementById('accumulationCountText');
-                    if (countText) countText.textContent = `Pegawai ini telah dinilai oleh ${logsForPegawai.length} Kasubbag pada periode ${selectedPeriode}`;
-                    
-                    const totalText = document.getElementById('accumulationTotalScore');
-                    if (totalText) totalText.textContent = totalAccumulatedScore;
-                }
-            }
-
-            if (selectedPenilai && selectedPegawai && selectedPeriode) {
-                const existingLog = globalLogs.find(l => 
-                    l.penilai === selectedPenilai && 
-                    l.pegawai === selectedPegawai && 
-                    l.periode === selectedPeriode
-                );
-
-                if (existingLog) {
-                    for (let i = 1; i <= 8; i++) {
-                        const val = existingLog.scores[i - 1];
-                        const radio = document.querySelector(`input[name="P${i}"][value="${val}"]`);
-                        if (radio) radio.checked = true;
-                        
-                        const valLabel = document.getElementById(`val-P${i}`);
-                        if (valLabel) valLabel.textContent = val;
-                        
-                        const radios = document.getElementsByName('P' + i);
-                        radios.forEach(r => r.disabled = true);
-                        
-                        const starContainer = document.getElementById(`star-container-P${i}`);
-                        if (starContainer) starContainer.classList.add('disabled');
-                    }
-                    calculateTotal();
-
-                    showBanner('already', `Anda (${selectedPenilai}) sudah pernah memberikan nilai untuk ${selectedPegawai}. Data tidak dapat diubah lagi.`);
-                    
-                    const btnSubmit = document.getElementById('btnSubmit');
-                    if (btnSubmit) {
-                        btnSubmit.disabled = true;
-                        btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
-                    }
-                }
-            }
-        }
-
-        function showBanner(type, message) {
-            const banner = document.getElementById('statusBanner');
-            const icon = document.getElementById('statusIcon');
-            const title = document.getElementById('statusTitle');
-            const text = document.getElementById('statusText');
-
-            if (!banner || !icon || !title || !text) return;
-
-            banner.classList.remove('hidden', 'bg-green-50', 'border-green-200', 'text-green-800', 'bg-amber-50', 'border-amber-200', 'text-amber-800');
-
-            if (type === 'already') {
-                banner.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
-                icon.className = 'fas fa-exclamation-triangle text-2xl text-amber-600';
-                title.textContent = 'Penilaian Terkunci!';
-                text.textContent = message;
-            }
-        }
-
-        function updateScore(variableName) {
-            const radios = document.getElementsByName(variableName);
-            let selectedValue = 0;
-            for (const radio of radios) {
-                if (radio.checked) {
-                    selectedValue = parseInt(radio.value, 10);
-                    break;
-                }
-            }
-            const scoreDisplay = document.getElementById(`val-${variableName}`);
-            if (scoreDisplay) scoreDisplay.textContent = selectedValue;
-            calculateTotal();
-        }
-
-        function calculateTotal() {
-            let total = 0;
-            for (let i = 1; i <= 8; i++) {
-                const checked = document.querySelector(`input[name="P${i}"]:checked`);
-                if (checked) total += parseInt(checked.value, 10);
-            }
-            const totalScoreElem = document.getElementById('totalScore');
-            if (totalScoreElem) totalScoreElem.textContent = total;
-        }
-
-        function submitForm() {
-            const penilaiElem = document.getElementById('nama_penilai');
-            const pegawaiElem = document.getElementById('nama_pegawai');
-            const periodeElem = document.getElementById('periode');
-
-            const penilai = penilaiElem ? penilaiElem.value : '';
-            const pegawai = pegawaiElem ? pegawaiElem.value : '';
-            const periode = periodeElem ? periodeElem.value : '';
-
-            if (!penilai) return alert('Pilih Nama Penilai terlebih dahulu!');
-            if (!pegawai) return alert('Pilih Nama Pegawai terlebih dahulu!');
-            if (!periode) return alert('Pilih Periode terlebih dahulu!');
-
-            let formData = {
-                nama_penilai: penilai,
-                nama_pegawai: pegawai,
-                periode: periode
-            };
-
-            for (let i = 1; i <= 7; i++) {
-                let checked = document.querySelector(`input[name="P${i}"]:checked`);
-                if (!checked) {
-                    alert(`Bintang indikator nomor ${i} belum dipilih!`);
-                    return;
-                }
-                formData['P' + i] = parseInt(checked.value, 10);
-            }
-
-            const btnSubmit = document.getElementById('btnSubmit');
+        })
+        .catch(err => {
             if (btnSubmit) {
-                btnSubmit.disabled = true;
-                btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
             }
-
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify(formData),
-                redirect: 'follow'
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
-                }
-
-                if (res.status === 'success') {
-                    alert('Data penilaian berhasil disimpan!');
-                    location.reload();
-                } else {
-                    alert('Gagal menyimpan: ' + res.message);
-                }
-            })
-            .catch(err => {
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
-                }
-                alert('Terjadi kesalahan jaringan atau server.');
-            });
-        }
-    </script>
+            alert('Terjadi kesalahan jaringan atau server.');
+        });
+    }
+</script>
 </body>
 </html>

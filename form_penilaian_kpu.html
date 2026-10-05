@@ -5,26 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Penilaian Pegawai Berprestasi KPU Karimun</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        maroon: {
-                            50: '#fdf2f2',
-                            100: '#fde8e8',
-                            600: '#9b1c1c',
-                            700: '#800000',
-                            800: '#7209b7',
-                            900: '#610000',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- CSS Tailwind Compiled -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
     
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,7 +20,6 @@
             background-color: #f8fafc;
         }
         
-        /* Star Rating System */
         .star-rating {
             display: inline-flex;
             flex-direction: row-reverse;
@@ -67,12 +48,23 @@
             color: #fbbf24;
         }
 
-        .bg-maroon-custom {
-            background-color: #800000;
+        .star-rating.disabled label {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .star-rating.disabled label:hover,
+        .star-rating.disabled label:hover ~ label {
+            transform: none;
+            color: #e5e7eb;
+        }
+        
+        .star-rating.disabled input:checked ~ label {
+            color: #fbbf24;
         }
 
-        .border-maroon-custom {
-            border-color: #800000;
+        .bg-maroon-custom {
+            background-color: #800000;
         }
 
         .text-maroon-custom {
@@ -84,7 +76,6 @@
 
     <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         
-        <!-- Header Utama Maroon -->
         <div class="bg-maroon-custom text-white p-6 sm:p-8 text-center relative border-b-4 border-yellow-500">
             <div class="flex justify-center items-center mb-4">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/KPU_Logo.svg" 
@@ -97,109 +88,108 @@
         </div>
 
         <form id="appraisalForm" onsubmit="event.preventDefault();" class="p-6 sm:p-8 md:p-10">
-            <!-- Hidden Input Store Row Index -->
             <input type="hidden" id="rowIndex" name="rowIndex">
 
-            <!-- Metadata Form (Data Pegawai & Penilai) -->
+            <!-- Alert Notifikasi Pegawai Sudah Dinilai -->
+            <div id="alreadyEvaluatedBanner" class="hidden mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 flex items-center gap-3">
+                <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                <div>
+                    <h5 class="font-bold">Pegawai Sudah Dinilai!</h5>
+                    <p class="text-xs text-green-700">Data nilai pegawai ini telah tersimpan di sistem. Anda tidak dapat mengubah penilaian lagi.</p>
+                </div>
+            </div>
+
+            <!-- Data Metadata -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <!-- Data Pegawai -->
-                <div class="bg-red-50/40 p-5 rounded-xl border border-red-100">
+                <div class="bg-red-50 p-5 rounded-xl border border-red-100">
                     <h3 class="text-lg font-bold text-maroon-custom mb-4 border-b border-red-200 pb-2 flex items-center">
-                        <i class="fas fa-id-card mr-2.5"></i>Data Pegawai Yang Dinilai
+                        <i class="fas fa-id-card mr-2"></i>Data Pegawai Yang Dinilai
                     </h3>
                     
-                    <div class="space-y-3.5">
+                    <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Pegawai</label>
-                            <select id="nama_pegawai" name="nama_pegawai" onchange="onSelectPegawai()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 outline-none transition bg-white">
+                            <select id="nama_pegawai" name="nama_pegawai" onchange="onSelectPegawai()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
                                 <option value="">-- Memuat Data Pegawai... --</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">NIP</label>
-                            <input type="text" id="nip_pegawai" name="nip_pegawai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600 outline-none">
+                            <input type="text" id="nip_pegawai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Pangkat / Golongan</label>
-                            <input type="text" id="pangkat_pegawai" name="pangkat_pegawai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600 outline-none">
+                            <input type="text" id="pangkat_pegawai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Subbagian / Unit Kerja</label>
-                            <input type="text" id="unit_kerja" name="unit_kerja" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600 outline-none">
+                            <input type="text" id="unit_kerja" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
                         </div>
                     </div>
                 </div>
 
-                <!-- Data Penilai -->
                 <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2 flex items-center">
-                        <i class="fas fa-user-check mr-2.5 text-maroon-custom"></i>Data Penilai & Periode
+                        <i class="fas fa-user-check mr-2 text-maroon-custom"></i>Data Penilai & Periode
                     </h3>
                     
-                    <div class="space-y-3.5">
+                    <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Periode Penilaian</label>
-                            <select id="periode" name="periode" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 outline-none transition bg-white">
+                            <select id="periode" name="periode" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
                                 <option value="">-- Memuat Periode... --</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Penilai</label>
-                            <select id="nama_penilai" name="nama_penilai" onchange="onSelectPenilai()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 outline-none transition bg-white">
+                            <select id="nama_penilai" name="nama_penilai" onchange="onSelectPenilai()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
                                 <option value="">-- Memuat Data Penilai... --</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Jabatan Penilai</label>
-                            <input type="text" id="jabatan_penilai" name="jabatan_penilai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600 outline-none">
+                            <input type="text" id="jabatan_penilai" readonly placeholder="Otomatis terisi" class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm text-gray-600">
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Pertanyaan P1-P8 -->
             <div class="flex items-center justify-between mb-4 border-b-2 border-red-800 pb-2">
                 <h3 class="text-xl font-bold text-gray-900">Indikator Aspek Penilaian</h3>
                 <span class="text-xs bg-red-100 text-maroon-custom font-semibold px-3 py-1 rounded-full">8 Pertanyaan</span>
             </div>
-            
-            <div class="text-sm text-gray-600 mb-6 bg-amber-50 p-4 border-l-4 border-amber-500 rounded-r-lg flex items-start">
-                <i class="fas fa-star text-amber-500 mt-0.5 mr-3 text-base"></i>
-                <div>
-                    <strong>Petunjuk Penilaian:</strong> Pilih jumlah bintang untuk setiap aspek (1 bintang = 2 poin, hingga 5 bintang = 10 poin). Variabel backend tersimpan secara otomatis sebagai <code class="bg-amber-100 px-1 py-0.5 rounded font-mono text-red-800">P1</code> hingga <code class="bg-amber-100 px-1 py-0.5 rounded font-mono text-red-800">P8</code>.
-                </div>
-            </div>
 
             <div class="space-y-5">
-                
-                <!-- P1: Orientasi Pelayanan -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P1 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">1. Orientasi Pelayanan (Kualitas Kerja)</h4>
-                            <p class="text-sm text-gray-600 mt-1">Kecepatan, ketepatan, serta keberhasilan dalam menyelesaikan tugas dan pekerjaan yang diberikan.</p>
+                            <p class="text-sm text-gray-600 mt-1">Kecepatan, ketepatan, serta keberhasilan dalam menyelesaikan tugas.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P1')">
-                                <input type="radio" id="p1-5" name="P1" value="10"><label for="p1-5" class="fas fa-star" title="5 Bintang (10 Point)"></label>
-                                <input type="radio" id="p1-4" name="P1" value="8"><label for="p1-4" class="fas fa-star" title="4 Bintang (8 Point)"></label>
-                                <input type="radio" id="p1-3" name="P1" value="6"><label for="p1-3" class="fas fa-star" title="3 Bintang (6 Point)"></label>
-                                <input type="radio" id="p1-2" name="P1" value="4"><label for="p1-2" class="fas fa-star" title="2 Bintang (4 Point)"></label>
-                                <input type="radio" id="p1-1" name="P1" value="2"><label for="p1-1" class="fas fa-star" title="1 Bintang (2 Point)"></label>
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P1" onchange="updateScore('P1')">
+                                <input type="radio" id="p1-5" name="P1" value="10"><label for="p1-5" class="fas fa-star"></label>
+                                <input type="radio" id="p1-4" name="P1" value="8"><label for="p1-4" class="fas fa-star"></label>
+                                <input type="radio" id="p1-3" name="P1" value="6"><label for="p1-3" class="fas fa-star"></label>
+                                <input type="radio" id="p1-2" name="P1" value="4"><label for="p1-2" class="fas fa-star"></label>
+                                <input type="radio" id="p1-1" name="P1" value="2"><label for="p1-1" class="fas fa-star"></label>
                             </div>
                             <span class="text-sm font-bold text-maroon-custom min-w-[50px] text-right"><span id="val-P1">0</span> / 10</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- P2: Integritas -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P2 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">2. Integritas</h4>
-                            <p class="text-sm text-gray-600 mt-1">Tingkat tanggung jawab, kepercayaan pimpinan atas tugas, dan konsistensi dalam menjalankan nilai-nilai organisasi.</p>
+                            <p class="text-sm text-gray-600 mt-1">Tingkat tanggung jawab dan konsistensi kerja.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P2')">
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P2" onchange="updateScore('P2')">
                                 <input type="radio" id="p2-5" name="P2" value="10"><label for="p2-5" class="fas fa-star"></label>
                                 <input type="radio" id="p2-4" name="P2" value="8"><label for="p2-4" class="fas fa-star"></label>
                                 <input type="radio" id="p2-3" name="P2" value="6"><label for="p2-3" class="fas fa-star"></label>
@@ -211,15 +201,15 @@
                     </div>
                 </div>
 
-                <!-- P3: Komitmen -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P3 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">3. Komitmen</h4>
-                            <p class="text-sm text-gray-600 mt-1">Tingkat motivasi kerja, sikap pantang menyerah, keinginan berpartisipasi, serta tekad untuk berprestasi.</p>
+                            <p class="text-sm text-gray-600 mt-1">Motivasi kerja dan tekad untuk berprestasi.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P3')">
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P3" onchange="updateScore('P3')">
                                 <input type="radio" id="p3-5" name="P3" value="10"><label for="p3-5" class="fas fa-star"></label>
                                 <input type="radio" id="p3-4" name="P3" value="8"><label for="p3-4" class="fas fa-star"></label>
                                 <input type="radio" id="p3-3" name="P3" value="6"><label for="p3-3" class="fas fa-star"></label>
@@ -231,15 +221,15 @@
                     </div>
                 </div>
 
-                <!-- P4: Disiplin -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P4 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">4. Disiplin</h4>
-                            <p class="text-sm text-gray-600 mt-1">Ketepatan waktu kehadiran serta tingkat ketaatan pada peraturan dan kode etik kerja.</p>
+                            <p class="text-sm text-gray-600 mt-1">Ketepatan waktu kehadiran dan ketaatan peraturan.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P4')">
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P4" onchange="updateScore('P4')">
                                 <input type="radio" id="p4-5" name="P4" value="10"><label for="p4-5" class="fas fa-star"></label>
                                 <input type="radio" id="p4-4" name="P4" value="8"><label for="p4-4" class="fas fa-star"></label>
                                 <input type="radio" id="p4-3" name="P4" value="6"><label for="p4-3" class="fas fa-star"></label>
@@ -251,15 +241,15 @@
                     </div>
                 </div>
 
-                <!-- P5: Kerjasama -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P5 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">5. Kerjasama</h4>
-                            <p class="text-sm text-gray-600 mt-1">Kemampuan menghargai orang lain, membagi tugas dengan efektif, serta menyadari kelebihan dan kekurangan tim.</p>
+                            <p class="text-sm text-gray-600 mt-1">Kemampuan bekerja sama dalam tim.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P5')">
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P5" onchange="updateScore('P5')">
                                 <input type="radio" id="p5-5" name="P5" value="10"><label for="p5-5" class="fas fa-star"></label>
                                 <input type="radio" id="p5-4" name="P5" value="8"><label for="p5-4" class="fas fa-star"></label>
                                 <input type="radio" id="p5-3" name="P5" value="6"><label for="p5-3" class="fas fa-star"></label>
@@ -271,15 +261,15 @@
                     </div>
                 </div>
 
-                <!-- P6: Kepekaan Lingkungan -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P6 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">6. Kepekaan Terhadap Lingkungan</h4>
-                            <p class="text-sm text-gray-600 mt-1">Tanggap dan peka terhadap situasi lingkungan kerja, rekan kerja, dan dinamika organisasi.</p>
+                            <p class="text-sm text-gray-600 mt-1">Kepekaan terhadap dinamika kerja.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P6')">
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P6" onchange="updateScore('P6')">
                                 <input type="radio" id="p6-5" name="P6" value="10"><label for="p6-5" class="fas fa-star"></label>
                                 <input type="radio" id="p6-4" name="P6" value="8"><label for="p6-4" class="fas fa-star"></label>
                                 <input type="radio" id="p6-3" name="P6" value="6"><label for="p6-3" class="fas fa-star"></label>
@@ -291,15 +281,15 @@
                     </div>
                 </div>
 
-                <!-- P7: Inovasi -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P7 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">7. Inovasi</h4>
-                            <p class="text-sm text-gray-600 mt-1">Memiliki wawasan luas, berani melakukan perubahan, inisiatif, kreatif, serta aktif mengungkapkan ide/gagasan.</p>
+                            <p class="text-sm text-gray-600 mt-1">Inisiatif, kreatif, dan ide gagasan baru.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P7')">
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P7" onchange="updateScore('P7')">
                                 <input type="radio" id="p7-5" name="P7" value="10"><label for="p7-5" class="fas fa-star"></label>
                                 <input type="radio" id="p7-4" name="P7" value="8"><label for="p7-4" class="fas fa-star"></label>
                                 <input type="radio" id="p7-3" name="P7" value="6"><label for="p7-3" class="fas fa-star"></label>
@@ -311,15 +301,15 @@
                     </div>
                 </div>
 
-                <!-- P8: Komunikasi -->
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-red-300 transition-all">
+                <!-- P8 -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex-1">
                             <h4 class="text-base font-bold text-gray-900">8. Komunikasi</h4>
-                            <p class="text-sm text-gray-600 mt-1">Sikap ramah, kemampuan berkomunikasi dengan berbagai pihak terkait, serta kejelasan dalam memberikan informasi.</p>
+                            <p class="text-sm text-gray-600 mt-1">Sikap ramah dan penyampaian informasi yang jelas.</p>
                         </div>
-                        <div class="flex items-center justify-between md:justify-end gap-3 min-w-[200px] bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <div class="star-rating" onchange="updateScore('P8')">
+                        <div class="flex items-center justify-between md:justify-end gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="star-rating" id="star-container-P8" onchange="updateScore('P8')">
                                 <input type="radio" id="p8-5" name="P8" value="10"><label for="p8-5" class="fas fa-star"></label>
                                 <input type="radio" id="p8-4" name="P8" value="8"><label for="p8-4" class="fas fa-star"></label>
                                 <input type="radio" id="p8-3" name="P8" value="6"><label for="p8-3" class="fas fa-star"></label>
@@ -330,80 +320,72 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
+            <!-- Ringkasan Nilai -->
             <div class="mt-8 bg-red-50 p-5 rounded-xl border border-red-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                     <h4 class="text-lg font-bold text-gray-900">Ringkasan Nilai Akhir</h4>
-                    <p class="text-xs text-gray-600">Akumulasi otomatis dari seluruh 8 indikator aspek penilaian.</p>
+                    <p class="text-xs text-gray-600">Akumulasi otomatis seluruh indikator.</p>
                 </div>
                 <div class="text-center sm:text-right bg-white px-6 py-3 rounded-lg border border-red-200 shadow-sm">
-                    <span class="text-xs text-gray-500 uppercase tracking-wider font-semibold block">Total Skor</span>
+                    <span class="text-xs text-gray-500 uppercase font-semibold block">Total Skor</span>
                     <span class="text-3xl font-extrabold text-maroon-custom" id="totalScore">0</span>
                     <span class="text-gray-500 font-bold text-sm"> / 80</span>
                 </div>
             </div>
 
-            <div class="mt-8">
-                <label for="catatan" class="block text-base font-bold text-gray-900 mb-2">Catatan dan Rekomendasi Penilai</label>
-                <textarea id="catatan" name="catatan_rekomendasi" rows="4" class="w-full border border-gray-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 outline-none transition" placeholder="Tuliskan masukan, catatan evaluasi, atau rekomendasi untuk pegawai yang dinilai..."></textarea>
-            </div>
-
             <div class="mt-8 flex flex-col sm:flex-row justify-end gap-3">
-                <button type="reset" onclick="resetScores()" class="w-full sm:w-auto px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition">
-                    Reset Form
-                </button>
-                <button type="button" id="btnSubmit" onclick="submitForm()" class="w-full sm:w-auto bg-maroon-custom hover:bg-red-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition flex items-center justify-center">
+                <button type="button" id="btnSubmit" onclick="submitForm()" class="w-full sm:w-auto bg-maroon-custom hover:bg-red-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition flex items-center justify-center">
                     <i class="fas fa-save mr-2"></i> Simpan Penilaian
                 </button>
             </div>
-
         </form>
     </div>
 
     <script>
-        // API Endpoint Deploy Apps Script
         const API_URL = 'https://script.google.com/macros/s/AKfycbwXGirPwTSp_Q8hlvNeQrPoYMCKD3fw9t-kUEUHNdsDOG4gSpxb_v7KfOtxToqDB8bpuw/exec';
 
         let globalPegawaiData = [];
         let globalPenilaiData = [];
 
-        // Memuat Data Pertama Kali via FETCH API
         document.addEventListener('DOMContentLoaded', function() {
-            fetch(API_URL)
-                .then(res => res.json())
-                .then(res => {
-                    if (res.status === 'success') {
-                        onDataLoaded(res.data);
-                    } else {
-                        showToast('Gagal memuat data: ' + res.message, 'error');
-                    }
-                })
-                .catch(err => {
-                    showToast('Gagal terhubung ke API Apps Script: ' + err.message, 'error');
-                });
+            fetch(API_URL, {
+                method: 'GET',
+                redirect: 'follow'
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    onDataLoaded(res.data);
+                } else {
+                    alert('Gagal memuat data: ' + res.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Gagal mengambil data dari Google Apps Script.');
+            });
         });
 
         function onDataLoaded(data) {
             globalPegawaiData = data.pegawai || [];
             globalPenilaiData = data.penilai || [];
 
-            // Populate Dropdown Pegawai
             const selectPegawai = document.getElementById('nama_pegawai');
             selectPegawai.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
             globalPegawaiData.forEach((peg, index) => {
-                selectPegawai.innerHTML += `<option value="${index}">${peg.nama}</option>`;
+                // Beri simbol centang jika pegawai sudah dinilai
+                const prefix = peg.isEvaluated ? '✓ ' : '';
+                selectPegawai.innerHTML += `<option value="${index}">${prefix}${peg.nama}</option>`;
             });
 
-            // Populate Dropdown Penilai
             const selectPenilai = document.getElementById('nama_penilai');
             selectPenilai.innerHTML = '<option value="">-- Pilih Penilai --</option>';
             globalPenilaiData.forEach((pen, index) => {
                 selectPenilai.innerHTML += `<option value="${index}">${pen.nama}</option>`;
             });
 
-            // Populate Dropdown Periode
             const selectPeriode = document.getElementById('periode');
             selectPeriode.innerHTML = '<option value="">-- Pilih Periode --</option>';
             if (data.periodeList && data.periodeList.length > 0) {
@@ -413,8 +395,38 @@
             }
         }
 
-        // Auto fill Data Pegawai saat nama dipilih
+        function resetFormState() {
+            document.getElementById('alreadyEvaluatedBanner').classList.add('hidden');
+            document.getElementById('btnSubmit').disabled = false;
+            document.getElementById('btnSubmit').classList.remove('opacity-50', 'cursor-not-allowed');
+
+            for (let i = 1; i <= 8; i++) {
+                const radios = document.getElementsByName('P' + i);
+                radios.forEach(r => {
+                    r.checked = false;
+                    r.disabled = false;
+                });
+                document.getElementById(`star-container-P${i}`).classList.remove('disabled');
+                document.getElementById(`val-P${i}`).textContent = '0';
+            }
+            calculateTotal();
+        }
+
+        function setFormDisabledState() {
+            document.getElementById('alreadyEvaluatedBanner').classList.remove('hidden');
+            document.getElementById('btnSubmit').disabled = true;
+            document.getElementById('btnSubmit').classList.add('opacity-50', 'cursor-not-allowed');
+
+            for (let i = 1; i <= 8; i++) {
+                const radios = document.getElementsByName('P' + i);
+                radios.forEach(r => r.disabled = true);
+                document.getElementById(`star-container-P${i}`).classList.add('disabled');
+            }
+        }
+
         function onSelectPegawai() {
+            resetFormState();
+            
             const index = document.getElementById('nama_pegawai').value;
             if (index !== "") {
                 const peg = globalPegawaiData[index];
@@ -422,9 +434,24 @@
                 document.getElementById('pangkat_pegawai').value = peg.golongan;
                 document.getElementById('unit_kerja').value = peg.subbagian;
                 document.getElementById('rowIndex').value = peg.rowIndex;
-                
-                if (peg.periode) {
-                    document.getElementById('periode').value = peg.periode;
+                if (peg.periode) document.getElementById('periode').value = peg.periode;
+
+                // Jika pegawai sudah dinilai
+                if (peg.isEvaluated) {
+                    // Tampilkan nilai yang tersimpan
+                    if (peg.scores && peg.scores.length === 8) {
+                        for (let i = 1; i <= 8; i++) {
+                            const val = peg.scores[i - 1];
+                            const radio = document.querySelector(`input[name="P${i}"][value="${val}"]`);
+                            if (radio) radio.checked = true;
+                            document.getElementById(`val-P${i}`).textContent = val;
+                        }
+                        calculateTotal();
+                    }
+                    
+                    // Kunci form agar tidak bisa diubah
+                    setFormDisabledState();
+                    alert(`Pegawai "${peg.nama}" sudah pernah dinilai! Penilaian tidak dapat diubah lagi.`);
                 }
             } else {
                 document.getElementById('nip_pegawai').value = '';
@@ -434,7 +461,6 @@
             }
         }
 
-        // Auto fill Data Penilai saat penilai dipilih
         function onSelectPenilai() {
             const index = document.getElementById('nama_penilai').value;
             if (index !== "") {
@@ -445,88 +471,66 @@
             }
         }
 
-        // Update skor untuk indikator tertentu
         function updateScore(variableName) {
             const radios = document.getElementsByName(variableName);
             let selectedValue = 0;
-            
             for (const radio of radios) {
                 if (radio.checked) {
                     selectedValue = parseInt(radio.value, 10);
                     break;
                 }
             }
-            
             const scoreDisplay = document.getElementById(`val-${variableName}`);
-            if (scoreDisplay) {
-                scoreDisplay.textContent = selectedValue;
-            }
-
+            if (scoreDisplay) scoreDisplay.textContent = selectedValue;
             calculateTotal();
         }
 
-        // Menghitung total akumulasi skor
         function calculateTotal() {
             let total = 0;
             for (let i = 1; i <= 8; i++) {
                 const checked = document.querySelector(`input[name="P${i}"]:checked`);
-                if (checked) {
-                    total += parseInt(checked.value, 10);
-                }
+                if (checked) total += parseInt(checked.value, 10);
             }
             document.getElementById('totalScore').textContent = total;
         }
 
-        // Reset skor tampilan
-        function resetScores() {
-            setTimeout(() => {
-                for (let i = 1; i <= 8; i++) {
-                    document.getElementById(`val-P${i}`).textContent = '0';
-                }
-                document.getElementById('totalScore').textContent = '0';
-                document.getElementById('nip_pegawai').value = '';
-                document.getElementById('pangkat_pegawai').value = '';
-                document.getElementById('unit_kerja').value = '';
-                document.getElementById('jabatan_penilai').value = '';
-            }, 50);
-        }
-
-        // Mengirimkan data via POST Request
         function submitForm() {
             const pegawaiIndex = document.getElementById('nama_pegawai').value;
             if (pegawaiIndex === "") {
-                showToast('Pilih Nama Pegawai terlebih dahulu!', 'error');
+                alert('Pilih Nama Pegawai terlebih dahulu!');
                 return;
             }
 
-            let missingQuestions = [];
+            const peg = globalPegawaiData[pegawaiIndex];
+            if (peg && peg.isEvaluated) {
+                alert('Pegawai ini sudah dinilai dan tidak bisa diisi ulang!');
+                return;
+            }
+
             let formData = {
                 rowIndex: document.getElementById('rowIndex').value
             };
             
             for (let i = 1; i <= 8; i++) {
-                let variableName = 'P' + i;
-                let checked = document.querySelector(`input[name="${variableName}"]:checked`);
+                let checked = document.querySelector(`input[name="P${i}"]:checked`);
                 if (!checked) {
-                    missingQuestions.push(i);
-                } else {
-                    formData[variableName] = parseInt(checked.value, 10);
+                    alert(`Bintang indikator nomor ${i} belum dipilih!`);
+                    return;
                 }
+                formData['P' + i] = parseInt(checked.value, 10);
             }
 
-            if (missingQuestions.length > 0) {
-                showToast(`Mohon berikan penilaian bintang pada indikator nomor: ${missingQuestions.join(', ')}`, 'error');
-                return;
-            }
-
-            // Disable Button saat pengiriman
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
 
             fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify(formData)
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify(formData),
+                redirect: 'follow'
             })
             .then(res => res.json())
             .then(res => {
@@ -534,51 +538,17 @@
                 btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
 
                 if (res.status === 'success') {
-                    showSuccessModal();
+                    alert('Data penilaian berhasil disimpan ke Spreadsheet!');
+                    location.reload();
                 } else {
-                    showToast('Gagal menyimpan: ' + res.message, 'error');
+                    alert('Gagal menyimpan: ' + res.message);
                 }
             })
             .catch(err => {
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
-                showToast('Terjadi kesalahan: ' + err.message, 'error');
+                alert('Terjadi kesalahan jaringan atau server. Silakan muat ulang halaman.');
             });
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            toast.className = `fixed top-5 left-1/2 -translate-x-1/2 bg-red-800 text-white px-6 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-2 text-sm font-semibold transition-all`;
-            toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
-        }
-
-        function showSuccessModal() {
-            const total = document.getElementById('totalScore').textContent;
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50';
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl p-6 sm:p-8 text-center max-w-sm w-full shadow-2xl border border-gray-100">
-                    <div class="w-16 h-16 bg-red-100 text-maroon-custom rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1">Penilaian Berhasil!</h3>
-                    <p class="text-sm text-gray-600 mb-4">Formulir penilaian telah berhasil diproses dan tersimpan ke Sheet PEGAWAI.</p>
-                    <div class="bg-gray-50 rounded-xl p-3 mb-6 border border-gray-200">
-                        <span class="text-xs text-gray-500 font-semibold block">TOTAL SKOR</span>
-                        <span class="text-2xl font-black text-maroon-custom">${total} / 80</span>
-                    </div>
-                    <button onclick="this.closest('.fixed').remove(); location.reload();" class="w-full bg-maroon-custom hover:bg-red-900 text-white font-bold py-2.5 px-4 rounded-xl transition">
-                        Selesai
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(modal);
         }
     </script>
 </body>

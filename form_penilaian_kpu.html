@@ -300,7 +300,7 @@
         </form>
     </div>
 
-    <script>
+   <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbwXGirPwTSp_Q8hlvNeQrPoYMCKD3fw9t-kUEUHNdsDOG4gSpxb_v7KfOtxToqDB8bpuw/exec';
 
         let globalPegawaiData = [];
@@ -331,28 +331,37 @@
             renderPegawaiDropdown();
 
             const selectPenilai = document.getElementById('nama_penilai');
-            selectPenilai.innerHTML = '<option value="">-- Pilih Penilai --</option>';
-            globalPenilaiData.forEach((pen, i) => {
-                selectPenilai.innerHTML += `<option value="${pen.nama}">${pen.nama}</option>`;
-            });
+            if (selectPenilai) {
+                selectPenilai.innerHTML = '<option value="">-- Pilih Penilai --</option>';
+                globalPenilaiData.forEach((pen) => {
+                    selectPenilai.innerHTML += `<option value="${pen.nama}">${pen.nama}</option>`;
+                });
+            }
 
             const selectPeriode = document.getElementById('periode');
-            selectPeriode.innerHTML = '<option value="">-- Pilih Periode --</option>';
-            if (data.periodeList && data.periodeList.length > 0) {
-                data.periodeList.forEach(p => {
-                    selectPeriode.innerHTML += `<option value="${p}">${p}</option>`;
-                });
+            if (selectPeriode) {
+                selectPeriode.innerHTML = '<option value="">-- Pilih Periode --</option>';
+                if (data.periodeList && data.periodeList.length > 0) {
+                    data.periodeList.forEach(p => {
+                        selectPeriode.innerHTML += `<option value="${p}">${p}</option>`;
+                    });
+                }
             }
         }
 
         function renderPegawaiDropdown() {
-            const currentPenilai = document.getElementById('nama_penilai').value;
-            const currentPeriode = document.getElementById('periode').value;
+            const selectPenilai = document.getElementById('nama_penilai');
+            const selectPeriode = document.getElementById('periode');
             const selectPegawai = document.getElementById('nama_pegawai');
+            
+            if (!selectPegawai) return;
+
+            const currentPenilai = selectPenilai ? selectPenilai.value : '';
+            const currentPeriode = selectPeriode ? selectPeriode.value : '';
+
             selectPegawai.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
 
             globalPegawaiData.forEach((peg) => {
-                // Tandai centang [✓] jika Kasubbag yang terpilih SUDAH menilai pegawai ini pada periode tersebut
                 let alreadyEvaluatedByThisPenilai = false;
                 if (currentPenilai && currentPeriode) {
                     alreadyEvaluatedByThisPenilai = globalLogs.some(l => 
@@ -368,10 +377,17 @@
         }
 
         function resetFormInputs() {
-            document.getElementById('statusBanner').classList.add('hidden');
-            document.getElementById('accumulationBox').classList.add('hidden');
-            document.getElementById('btnSubmit').disabled = false;
-            document.getElementById('btnSubmit').classList.remove('opacity-50', 'cursor-not-allowed');
+            const statusBanner = document.getElementById('statusBanner');
+            if (statusBanner) statusBanner.classList.add('hidden');
+
+            const accumulationBox = document.getElementById('accumulationBox');
+            if (accumulationBox) accumulationBox.classList.add('hidden');
+
+            const btnSubmit = document.getElementById('btnSubmit');
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
 
             for (let i = 1; i <= 8; i++) {
                 const radios = document.getElementsByName('P' + i);
@@ -379,8 +395,12 @@
                     r.checked = false;
                     r.disabled = false;
                 });
-                document.getElementById(`star-container-P${i}`).classList.remove('disabled');
-                document.getElementById(`val-P${i}`).textContent = '0';
+
+                const starContainer = document.getElementById(`star-container-P${i}`);
+                if (starContainer) starContainer.classList.remove('disabled');
+
+                const valLabel = document.getElementById(`val-P${i}`);
+                if (valLabel) valLabel.textContent = '0';
             }
             calculateTotal();
         }
@@ -388,40 +408,38 @@
         function onFormStateChange() {
             resetFormInputs();
 
-            const selectedPenilai = document.getElementById('nama_penilai').value;
-            const selectedPegawai = document.getElementById('nama_pegawai').value;
-            const selectedPeriode = document.getElementById('periode').value;
+            const selectedPenilai = document.getElementById('nama_penilai') ? document.getElementById('nama_penilai').value : '';
+            const selectedPegawai = document.getElementById('nama_pegawai') ? document.getElementById('nama_pegawai').value : '';
+            const selectedPeriode = document.getElementById('periode') ? document.getElementById('periode').value : '';
 
-            // Auto fill Jabatan Penilai
             if (selectedPenilai) {
                 const penObj = globalPenilaiData.find(p => p.nama === selectedPenilai);
-                if (penObj) document.getElementById('jabatan_penilai').value = penObj.jabatan;
-            } else {
+                if (penObj && document.getElementById('jabatan_penilai')) {
+                    document.getElementById('jabatan_penilai').value = penObj.jabatan;
+                }
+            } else if (document.getElementById('jabatan_penilai')) {
                 document.getElementById('jabatan_penilai').value = '';
             }
 
-            // Auto fill Detail Pegawai
             if (selectedPegawai) {
                 const pegObj = globalPegawaiData.find(p => p.nama === selectedPegawai);
                 if (pegObj) {
-                    document.getElementById('nip_pegawai').value = pegObj.nip;
-                    document.getElementById('unit_kerja').value = pegObj.subbagian;
-                    if (pegObj.periode && !selectedPeriode) {
+                    if (document.getElementById('nip_pegawai')) document.getElementById('nip_pegawai').value = pegObj.nip;
+                    if (document.getElementById('unit_kerja')) document.getElementById('unit_kerja').value = pegObj.subbagian;
+                    if (pegObj.periode && !selectedPeriode && document.getElementById('periode')) {
                         document.getElementById('periode').value = pegObj.periode;
                     }
                 }
             } else {
-                document.getElementById('nip_pegawai').value = '';
-                document.getElementById('unit_kerja').value = '';
+                if (document.getElementById('nip_pegawai')) document.getElementById('nip_pegawai').value = '';
+                if (document.getElementById('unit_kerja')) document.getElementById('unit_kerja').value = '';
             }
 
-            // Refresh tanda [✓] di dropdown pegawai sesuai penilai terpilih
             renderPegawaiDropdown();
-            if (selectedPegawai) {
+            if (selectedPegawai && document.getElementById('nama_pegawai')) {
                 document.getElementById('nama_pegawai').value = selectedPegawai;
             }
 
-            // Tampilkan Rekap Akumulasi Seluruh Kasubbag untuk pegawai ini
             if (selectedPegawai && selectedPeriode) {
                 const logsForPegawai = globalLogs.filter(l => l.pegawai === selectedPegawai && l.periode === selectedPeriode);
                 if (logsForPegawai.length > 0) {
@@ -430,13 +448,17 @@
                         totalAccumulatedScore += l.scores.reduce((a, b) => a + b, 0);
                     });
                     
-                    document.getElementById('accumulationBox').classList.remove('hidden');
-                    document.getElementById('accumulationCountText').textContent = `Pegawai ini telah dinilai oleh ${logsForPegawai.length} Kasubbag pada periode ${selectedPeriode}`;
-                    document.getElementById('accumulationTotalScore').textContent = totalAccumulatedScore;
+                    const accumBox = document.getElementById('accumulationBox');
+                    if (accumBox) accumBox.classList.remove('hidden');
+                    
+                    const countText = document.getElementById('accumulationCountText');
+                    if (countText) countText.textContent = `Pegawai ini telah dinilai oleh ${logsForPegawai.length} Kasubbag pada periode ${selectedPeriode}`;
+                    
+                    const totalText = document.getElementById('accumulationTotalScore');
+                    if (totalText) totalText.textContent = totalAccumulatedScore;
                 }
             }
 
-            // Cek apakah Kasubbag terpilih SUDAH menilai Pegawai terpilih
             if (selectedPenilai && selectedPegawai && selectedPeriode) {
                 const existingLog = globalLogs.find(l => 
                     l.penilai === selectedPenilai && 
@@ -445,24 +467,29 @@
                 );
 
                 if (existingLog) {
-                    // Tampilkan nilai yang pernah diinputkan oleh Kasubbag ini
                     for (let i = 1; i <= 8; i++) {
                         const val = existingLog.scores[i - 1];
                         const radio = document.querySelector(`input[name="P${i}"][value="${val}"]`);
                         if (radio) radio.checked = true;
-                        document.getElementById(`val-P${i}`).textContent = val;
                         
-                        // Disable input bintang
+                        const valLabel = document.getElementById(`val-P${i}`);
+                        if (valLabel) valLabel.textContent = val;
+                        
                         const radios = document.getElementsByName('P' + i);
                         radios.forEach(r => r.disabled = true);
-                        document.getElementById(`star-container-P${i}`).classList.add('disabled');
+                        
+                        const starContainer = document.getElementById(`star-container-P${i}`);
+                        if (starContainer) starContainer.classList.add('disabled');
                     }
                     calculateTotal();
 
-                    // Kunci tombol simpan & tampilkan banner
                     showBanner('already', `Anda (${selectedPenilai}) sudah pernah memberikan nilai untuk ${selectedPegawai}. Data tidak dapat diubah lagi.`);
-                    document.getElementById('btnSubmit').disabled = true;
-                    document.getElementById('btnSubmit').classList.add('opacity-50', 'cursor-not-allowed');
+                    
+                    const btnSubmit = document.getElementById('btnSubmit');
+                    if (btnSubmit) {
+                        btnSubmit.disabled = true;
+                        btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
                 }
             }
         }
@@ -472,6 +499,8 @@
             const icon = document.getElementById('statusIcon');
             const title = document.getElementById('statusTitle');
             const text = document.getElementById('statusText');
+
+            if (!banner || !icon || !title || !text) return;
 
             banner.classList.remove('hidden', 'bg-green-50', 'border-green-200', 'text-green-800', 'bg-amber-50', 'border-amber-200', 'text-amber-800');
 
@@ -492,7 +521,8 @@
                     break;
                 }
             }
-            document.getElementById(`val-${variableName}`).textContent = selectedValue;
+            const scoreDisplay = document.getElementById(`val-${variableName}`);
+            if (scoreDisplay) scoreDisplay.textContent = selectedValue;
             calculateTotal();
         }
 
@@ -502,13 +532,18 @@
                 const checked = document.querySelector(`input[name="P${i}"]:checked`);
                 if (checked) total += parseInt(checked.value, 10);
             }
-            document.getElementById('totalScore').textContent = total;
+            const totalScoreElem = document.getElementById('totalScore');
+            if (totalScoreElem) totalScoreElem.textContent = total;
         }
 
         function submitForm() {
-            const penilai = document.getElementById('nama_penilai').value;
-            const pegawai = document.getElementById('nama_pegawai').value;
-            const periode = document.getElementById('periode').value;
+            const penilaiElem = document.getElementById('nama_penilai');
+            const pegawaiElem = document.getElementById('nama_pegawai');
+            const periodeElem = document.getElementById('periode');
+
+            const penilai = penilaiElem ? penilaiElem.value : '';
+            const pegawai = pegawaiElem ? pegawaiElem.value : '';
+            const periode = periodeElem ? periodeElem.value : '';
 
             if (!penilai) return alert('Pilih Nama Penilai terlebih dahulu!');
             if (!pegawai) return alert('Pilih Nama Pegawai terlebih dahulu!');
@@ -530,8 +565,10 @@
             }
 
             const btnSubmit = document.getElementById('btnSubmit');
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+            }
 
             fetch(API_URL, {
                 method: 'POST',
@@ -541,8 +578,10 @@
             })
             .then(res => res.json())
             .then(res => {
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
+                }
 
                 if (res.status === 'success') {
                     alert('Data penilaian berhasil disimpan!');
@@ -552,8 +591,10 @@
                 }
             })
             .catch(err => {
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Penilaian';
+                }
                 alert('Terjadi kesalahan jaringan atau server.');
             });
         }

@@ -32,6 +32,11 @@
         
         <!-- Header Banner -->
         <div class="bg-maroon-custom text-white p-6 sm:p-8 text-center relative border-b-4 border-yellow-500">
+            <!-- Tombol Logout Kanan Atas -->
+            <button onclick="logout()" class="absolute top-4 right-4 text-xs sm:text-sm bg-red-700 hover:bg-red-800 text-white font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+
             <div class="flex justify-center items-center mb-4">
                 <img src="https://lh3.googleusercontent.com/d/13hCS79nRll5QEsyXQW0Q4gkwi5WVloet" alt="Logo KPU" class="h-20 sm:h-24 object-contain filter drop-shadow-md">
             </div>
@@ -635,6 +640,13 @@
                 }
                 alert('Terjadi kesalahan jaringan atau server.');
             });
+        }
+
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                sessionStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            }
         }
     </script>
 </body>

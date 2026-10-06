@@ -102,7 +102,7 @@
             <div id="accumulationBox" class="hidden mb-8 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Total Akumulasi Seluruh Kasubbag</span>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Total Akumulasi </span>
                         <h4 id="accumulationCountText" class="text-sm font-semibold text-blue-900">Sudah dinilai oleh 0 Kasubbag</h4>
                     </div>
                     <div class="text-right">
@@ -452,7 +452,7 @@
                 if (accumBox) accumBox.classList.remove('hidden');
                 
                 const countText = document.getElementById('accumulationCountText');
-                if (countText) countText.textContent = `Pegawai ini telah dinilai oleh ${logsForPegawai.length} Kasubbag pada periode ${selectedPeriode}`;
+                if (countText) countText.textContent = `Pegawai ini telah dinilai oleh ${logsForPegawai.length} Penilai pada periode ${selectedPeriode}`;
                 
                 const totalText = document.getElementById('accumulationTotalScore');
                 if (totalText) totalText.textContent = totalAccumulatedScore;

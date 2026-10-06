@@ -326,11 +326,27 @@
         let globalLogs = [];
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Check Session Login
+            const sessionData = JSON.parse(sessionStorage.getItem('userSession'));
+            if (!sessionData || sessionData.role !== 'kasubbag') {
+                alert('Anda harus login terlebih dahulu sebagai Kasubbag!');
+                window.location.href = 'index.html';
+                return;
+            }
+
             fetch(API_URL, { method: 'GET', redirect: 'follow' })
             .then(res => res.json())
             .then(res => {
                 if (res.status === 'success') {
                     onDataLoaded(res.data);
+                    
+                    // Auto select data Penilai dari sesi login NIP
+                    const selectPenilai = document.getElementById('nama_penilai');
+                    if (selectPenilai) {
+                        selectPenilai.value = sessionData.nama;
+                        selectPenilai.disabled = true; // Kunci agar tidak diganti orang lain
+                        onPenilaiChanged();
+                    }
                 } else {
                     alert('Gagal memuat data: ' + res.message);
                 }

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Penilaian Kinerja - KPU Karimun</title>
+    
+    <!-- CSS Tailwind -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .bg-maroon-custom { background-color: #800000; }
+        .text-maroon-custom { color: #800000; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        
+        <!-- Header Banner -->
+        <div class="bg-maroon-custom text-white p-6 text-center border-b-4 border-yellow-500">
+            <div class="flex justify-center items-center mb-3">
+                <img src="https://lh3.googleusercontent.com/d/13hCS79nRll5QEsyXQW0Q4gkwi5WVloet" alt="Logo KPU" class="h-20 object-contain filter drop-shadow-md">
+            </div>
+            <h1 class="text-xl font-extrabold tracking-wide">SISTEM PENILAIAN KINERJA</h1>
+            <h2 class="text-xs font-medium text-red-100 tracking-wider">SEKRETARIAT KPU KABUPATEN KARIMUN</h2>
+        </div>
+
+        <!-- Form Login -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="p-6 space-y-5">
+            
+            <div id="errorAlert" class="hidden p-3 bg-red-100 border border-red-300 text-red-700 text-xs rounded-lg flex items-center gap-2">
+                <i class="fas fa-exclamation-circle text-base"></i>
+                <span id="errorMessage">NIP atau Password salah.</span>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">NIP (Nomor Induk Pegawai)</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-id-card"></i>
+                    </span>
+                    <input type="text" id="nip" required placeholder="Masukkan NIP Anda" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" id="password" required placeholder="Masukkan Password" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800">
+                </div>
+            </div>
+
+            <button type="submit" id="btnLogin" class="w-full bg-maroon-custom hover:bg-red-900 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center">
+                <i class="fas fa-sign-in-alt mr-2"></i> Masuk
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxZlc5OYs9aHSVtSUrelDzTQaTCgoseIErKqIi7TcVwdxik8OCkkSamEnbjU5EDYHWA/exec';
+        const PASSWORD_KONSTAN = "2102123";
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const nipInput = document.getElementById('nip').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            const btnLogin = document.getElementById('btnLogin');
+
+            errorAlert.classList.add('hidden');
+
+            // 1. Validasi Password Konstan
+            if (passwordInput !== PASSWORD_KONSTAN) {
+                errorMessage.textContent = 'Password yang Anda masukkan salah!';
+                errorAlert.classList.remove('hidden');
+                return;
+            }
+
+            // 2. Loading State
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memeriksa Data...';
+
+            // 3. Verifikasi NIP ke Backend Google Apps Script
+            fetch(`${API_URL}?action=login&nip=${encodeURIComponent(nipInput)}`, { method: 'GET', redirect: 'follow' })
+            .then(res => res.json())
+            .then(res => {
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Masuk';
+
+                if (res.status === 'success') {
+                    // Simpan data user ke sessionStorage
+                    sessionStorage.setItem('userSession', JSON.stringify(res.userData));
+
+                    // Redirect berdasarkan role NIP
+                    if (res.userData.role === 'kasubbag') {
+                        window.location.href = 'form_penilaian_kasubbag_peer.html';
+                    } else {
+                        window.location.href = 'form_penilaian_kpu.html';
+                    }
+                } else {
+                    errorMessage.textContent = res.message || 'NIP tidak ditemukan dalam database spreadsheet!';
+                    errorAlert.classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Masuk';
+                errorMessage.textContent = 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+                errorAlert.classList.remove('hidden');
+            });
+        }
+    </script>
+</body>
+</html>

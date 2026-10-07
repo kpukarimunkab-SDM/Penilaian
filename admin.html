@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - KPU Kabupaten Karimun</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .bg-maroon-gradient {
+      background: radial-gradient(circle at top center, #800020 0%, #4a0011 50%, #2b000a 100%);
+    }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-maroon-gradient min-h-screen flex flex-col justify-between text-slate-100 relative overflow-x-hidden">
+
+  <!-- Aksen Border Emas Atas -->
+  <div class="w-full h-1.5 bg-gradient-to-r from-amber-600 via-yellow-200 to-amber-600 shadow-lg"></div>
+
+  <!-- SECTION 1: FORM LOGIN PIN/PASSWORD ADMIN -->
+  <div id="loginSection" class="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
+    <div class="max-w-md w-full bg-slate-900/70 backdrop-blur-md p-8 rounded-2xl border border-amber-500/30 shadow-2xl text-center relative">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-600 rounded-t-2xl"></div>
+      
+      <div class="flex justify-center mb-4">
+        <div class="p-3 rounded-full bg-white/5 border border-amber-400/30 shadow-xl">
+          <img src="https://lh3.googleusercontent.com/d/13hCS79nRll5QEsyXQW0Q4gkwi5WVloet" alt="Logo KPU" class="h-20 object-contain filter drop-shadow-md">
+        </div>
+      </div>
+
+      <h2 class="text-xl font-bold text-amber-200 uppercase tracking-wide">Akses Admin Portal</h2>
+      <p class="text-xs text-slate-300 mt-1 mb-6">Masukkan PIN / Password Keamanan SDM</p>
+
+      <form onsubmit="handleAdminAuth(event)" class="space-y-4 text-left">
+        <div id="authAlert" class="hidden p-3 rounded-lg text-xs font-semibold bg-red-500/20 text-red-200 border border-red-500/40 text-center"></div>
+
+        <div>
+          <label class="block text-xs font-semibold text-amber-100/80 mb-1">PIN / Password Admin</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-400">
+              <i class="fas fa-key"></i>
+            </span>
+            <input type="password" id="inputPin" required placeholder="Masukkan PIN / Password" 
+                   class="w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-amber-500/40 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:brightness-110 text-slate-950 font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+          <i class="fas fa-lock-open"></i> Buka Akses Admin
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- SECTION 2: LANDING PAGE ADMIN (Hanya Tampil Setelah Auth Berhasil) -->
+  <main id="adminContentSection" class="hidden flex-1 flex-col items-center justify-center px-4 py-8 relative z-10">
+    <div class="max-w-4xl w-full text-center">
+      
+      <!-- Tombol Logout Admin -->
+      <div class="flex justify-end mb-4">
+        <button onclick="adminLogout()" class="bg-red-900/80 hover:bg-red-800 text-amber-200 text-xs font-semibold py-2 px-4 rounded-xl border border-amber-500/30 transition flex items-center gap-2 shadow">
+          <i class="fas fa-sign-out-alt"></i> Keluar Admin
+        </button>
+      </div>
+
+      <!-- Header Landing Page -->
+      <div class="flex flex-col items-center justify-center mb-4">
+        <div class="p-3 rounded-full bg-white/5 backdrop-blur-sm border border-amber-400/30 shadow-2xl mb-3">
+          <img src="https://lh3.googleusercontent.com/d/13hCS79nRll5QEsyXQW0Q4gkwi5WVloet" alt="Logo KPU" class="h-20 sm:h-24 object-contain filter drop-shadow-md">
+        </div>
+        
+        <h1 class="text-xl sm:text-2xl font-bold tracking-wide text-amber-200 uppercase">
+          KPU KABUPATEN KARIMUN
+        </h1>
+        <p class="text-xs sm:text-sm text-amber-100/80 tracking-widest uppercase mt-0.5">
+          Portal Eksekutif & Dashboard Admin
+        </p>
+      </div>
+
+      <!-- Garis Pemisah Ornamen Emas -->
+      <div class="flex items-center justify-center space-x-2 my-4 max-w-xs mx-auto">
+        <div class="h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent flex-1"></div>
+        <div class="w-2 h-2 rotate-45 bg-amber-300"></div>
+        <div class="h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent flex-1"></div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-2xl sm:text-3xl font-extrabold gold-gradient-text tracking-tight">
+          Pilih Dashboard Penilaian
+        </h2>
+        <p class="mt-2 text-slate-300 text-xs sm:text-sm max-w-lg mx-auto font-light">
+          Akses rekapitulasi data, akumulasi poin, dan grafik statistik hasil penilaian kinerja.
+        </p>
+      </div>
+
+      <!-- Option Cards Dashboard Admin -->
+      <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        
+        <!-- Option 1: Dashboard Hasil Penilaian Kasubbag -->
+        <a href="https://kpukarimunkab-sdm.github.io/Penilaian/nilai_kasubbag.html" 
+           class="group bg-slate-900/70 backdrop-blur-md p-8 rounded-2xl border border-amber-500/30 shadow-2xl hover:border-amber-400 hover:bg-slate-900/90 transition-all duration-300 flex flex-col justify-between text-left relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-600"></div>
+          <div>
+            <div class="w-12 h-12 bg-amber-500/10 border border-amber-400/30 text-amber-300 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors duration-300">
+              <i class="fas fa-chart-line text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-amber-200 mb-2 group-hover:text-amber-300 transition-colors">
+              Hasil Penilaian Kasubbag
+            </h3>
+            <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+              Lihat grafik akumulasi poin, tabel peringkat, dan statistik perolehan nilai untuk seluruh Kasubbag.
+            </p>
+          </div>
+          <div class="flex items-center text-xs sm:text-sm font-semibold text-amber-400 group-hover:translate-x-1 transition-transform">
+            <span>Buka Dashboard Kasubbag</span>
+            <i class="fas fa-arrow-right ml-2"></i>
+          </div>
+        </a>
+
+        <!-- Option 2: Dashboard Hasil Penilaian Pegawai -->
+        <a href="https://kpukarimunkab-sdm.github.io/Penilaian/nilai_pegawai" 
+           class="group bg-slate-900/70 backdrop-blur-md p-8 rounded-2xl border border-amber-500/30 shadow-2xl hover:border-amber-400 hover:bg-slate-900/90 transition-all duration-300 flex flex-col justify-between text-left relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-600"></div>
+          <div>
+            <div class="w-12 h-12 bg-amber-500/10 border border-amber-400/30 text-amber-300 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors duration-300">
+              <i class="fas fa-users-cog text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-amber-200 mb-2 group-hover:text-amber-300 transition-colors">
+              Hasil Penilaian Pegawai
+            </h3>
+            <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+              Lihat grafik rekapitulasi poin, predikat, dan perankingan hasil evaluasi kinerja seluruh Pegawai/Staf.
+            </p>
+          </div>
+          <div class="flex items-center text-xs sm:text-sm font-semibold text-amber-400 group-hover:translate-x-1 transition-transform">
+            <span>Buka Dashboard Pegawai</span>
+            <i class="fas fa-arrow-right ml-2"></i>
+          </div>
+        </a>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full bg-black/40 border-t border-amber-500/20 py-4 text-center text-xs text-amber-200/60 relative z-10">
+    <p>&copy; KPU Kabupaten Karimun - Subbagian SDM & Parmas</p>
+  </footer>
+
+  <!-- Aksen Border Emas Bawah -->
+  <div class="w-full h-1 bg-gradient-to-r from-amber-600 via-yellow-200 to-amber-600"></div>
+
+  <!-- SCRIPT LOGIKA AUTHENTICATION & SESSION MANAGEMENT -->
+  <script>
+    // Memeriksa status login saat halaman dibuka/di-refresh
+    document.addEventListener('DOMContentLoaded', function() {
+      checkAdminSession();
+    });
+
+    // Mencegah akses via browser back button tanpa sesi
+    window.addEventListener('pageshow', function(event) {
+      checkAdminSession();
+    });
+
+    function checkAdminSession() {
+      const isAdminLoggedIn = sessionStorage.getItem('adminAuthToken');
+      const loginSection = document.getElementById('loginSection');
+      const adminContentSection = document.getElementById('adminContentSection');
+
+      if (isAdminLoggedIn === 'valid_sdm_token') {
+        loginSection.classList.add('hidden');
+        adminContentSection.classList.remove('hidden');
+        adminContentSection.classList.add('flex');
+      } else {
+        loginSection.classList.remove('hidden');
+        adminContentSection.classList.add('hidden');
+        adminContentSection.classList.remove('flex');
+      }
+    }
+
+    function handleAdminAuth(e) {
+      e.preventDefault();
+      const inputPin = document.getElementById('inputPin').value.trim();
+      const authAlert = document.getElementById('authAlert');
+      authAlert.classList.add('hidden');
+
+      // Validasi PIN
+      if (inputPin === 'sdm123') {
+        sessionStorage.setItem('adminAuthToken', 'valid_sdm_token');
+        checkAdminSession();
+      } else {
+        authAlert.textContent = 'PIN / Password Admin salah! Akses ditolak.';
+        authAlert.classList.remove('hidden');
+      }
+    }
+
+    function adminLogout() {
+      if (confirm('Apakah Anda yakin ingin keluar dari Portal Admin?')) {
+        sessionStorage.removeItem('adminAuthToken');
+        document.getElementById('inputPin').value = '';
+        checkAdminSession();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Penilaian Kinerja - KPU Karimun</title>
+    <!-- CSS Tailwind -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .bg-maroon-custom { background-color: #800000; }
+        .text-maroon-custom { color: #800000; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        <!-- Header Banner -->
+        <div class="bg-maroon-custom text-white p-6 text-center border-b-4 border-yellow-500">
+            <div class="flex justify-center items-center mb-3">
+                <img src="https://lh3.googleusercontent.com/d/13hCS79nRll5QEsyXQW0Q4gkwi5WVloet" alt="Logo KPU" class="h-20 object-contain filter drop-shadow-md">
+            </div>
+            <h1 class="text-xl font-extrabold tracking-wide">SISTEM PENILAIAN KINERJA</h1>
+            <h2 class="text-xs font-medium text-red-100 tracking-wider">SEKRETARIAT KPU KABUPATEN KARIMUN</h2>
+        </div>
+
+        <!-- Form Login -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="p-6 space-y-5">
+            <div id="loginAlert" class="hidden p-3 rounded-lg text-xs font-semibold bg-red-100 text-red-700 border border-red-200"></div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">NIP Kasubbag / Penilai</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-id-card"></i>
+                    </span>
+                    <input type="text" id="loginNip" required placeholder="Masukkan NIP Anda" class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" id="loginPassword" required placeholder="Masukkan Password" class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800">
+                </div>
+            </div>
+
+            <button type="submit" id="btnLogin" disabled class="w-full bg-gray-400 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-not-allowed">
+                <i class="fas fa-spinner fa-spin" id="btnIcon"></i> <span id="btnText">Memuat Data Server...</span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwXGirPwTSp_Q8hlvNeQrPoYMCKD3fw9t-kUEUHNdsDOG4gSpxb_v7KfOtxToqDB8bpuw/exec';
+        let globalPenilaiData = [];
+        let isDataLoaded = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cek sesi login di sessionStorage
+            const sessionData = JSON.parse(sessionStorage.getItem('userSession'));
+            if (sessionData && sessionData.nip) {
+                window.location.href = 'form_penilaian_pegawai.html';
+                return;
+            }
+
+            // Fetch data dari Apps Script
+            fetch(API_URL, { method: 'GET', redirect: 'follow' })
+            .then(res => {
+                if (!res.ok) throw new Error('Respon jaringan tidak OK');
+                return res.json();
+            })
+            .then(res => {
+                if (res.status === 'success') {
+                    globalPenilaiData = res.data.penilai || [];
+                    isDataLoaded = true;
+                    setButtonReady();
+                } else {
+                    console.error('API mengembalikan status gagal:', res);
+                    showErrorState('Gagal memuat data dari server.');
+                }
+            })
+            .catch(err => {
+                console.error('Gagal memuat data login:', err);
+                showErrorState('Koneksi terputus. Pastikan GAS di-deploy "Anyone".');
+            });
+        });
+
+        function setButtonReady() {
+            const btn = document.getElementById('btnLogin');
+            const icon = document.getElementById('btnIcon');
+            const text = document.getElementById('btnText');
+
+            btn.disabled = false;
+            btn.className = "w-full bg-maroon-custom hover:bg-red-900 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer";
+            icon.className = "fas fa-sign-in-alt";
+            text.textContent = "Masuk Form Penilaian";
+        }
+
+        function showErrorState(message) {
+            const btn = document.getElementById('btnLogin');
+            const icon = document.getElementById('btnIcon');
+            const text = document.getElementById('btnText');
+            const alertBox = document.getElementById('loginAlert');
+
+            btn.disabled = true;
+            btn.className = "w-full bg-red-400 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-not-allowed";
+            icon.className = "fas fa-exclamation-triangle";
+            text.textContent = "Gagal Memuat Data";
+
+            alertBox.textContent = message;
+            alertBox.classList.remove('hidden');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const alertBox = document.getElementById('loginAlert');
+            alertBox.classList.add('hidden');
+
+            if (!isDataLoaded) {
+                alertBox.textContent = 'Data belum selesai dimuat. Harap tunggu sebentar.';
+                alertBox.classList.remove('hidden');
+                return;
+            }
+
+            const inputNip = document.getElementById('loginNip').value.trim();
+            const inputPass = document.getElementById('loginPassword').value.trim();
+
+            // 1. Validasi Password
+            if (inputPass !== '2102123') {
+                alertBox.textContent = 'Password salah! Silakan coba lagi.';
+                alertBox.classList.remove('hidden');
+                return;
+            }
+
+            // 2. Cari NIP pada data Kasubbag / Penilai
+            const matchedKasubbag = globalPenilaiData.find(k => String(k.nip).trim() === inputNip);
+
+            if (!matchedKasubbag) {
+                alertBox.textContent = 'NIP tidak terdaftar sebagai Kasubbag / Penilai!';
+                alertBox.classList.remove('hidden');
+                return;
+            }
+
+            // 3. Simpan Sesi Login di sessionStorage
+            sessionStorage.setItem('userSession', JSON.stringify({
+                nip: matchedKasubbag.nip,
+                nama: matchedKasubbag.nama,
+                jabatan: matchedKasubbag.jabatan,
+                role: 'kasubbag'
+            }));
+
+            // 4. Redirect ke Halaman Form
+            window.location.href = 'form_penilaian_pegawai.html';
+        }
+    </script>
+</body>
+</html>

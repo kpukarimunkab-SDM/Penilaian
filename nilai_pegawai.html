@@ -249,6 +249,16 @@
                 return;
             }
 
+            // 1. Ambil 3 skor tertinggi unik (Unique Top 3 Scores)
+            const uniqueScores = [...new Set(list.map(item => item.totalSkor))]
+                .filter(score => score > 0)
+                .sort((a, b) => b - a);
+
+            const top3Scores = uniqueScores.slice(0, 3);
+
+            // 2. Hitung penomoran peringkat dengan penanganan nilai seri
+            let currentRank = 1;
+
             list.forEach((item, idx) => {
                 let badgeClass = 'bg-gray-100 text-gray-700';
                 let predikat = 'Belum Ada Nilai';
@@ -268,9 +278,18 @@
                     predikat = 'Perlu Perbaikan';
                 }
 
-                let rankBadge = `<span class="font-bold text-gray-600">${idx + 1}</span>`;
-                if (idx === 0) {
-                    rankBadge = `<span class="w-7 h-7 bg-red-900 text-yellow-400 rounded-full inline-flex items-center justify-center shadow-sm border border-yellow-500"><i class="fas text-xs fa-crown"></i></span>`;
+                // Penyesuaian nomor peringkat jika ada nilai yang seri
+                if (idx > 0 && item.totalSkor < list[idx - 1].totalSkor) {
+                    currentRank = idx + 1;
+                }
+
+                // Cek apakah total poin Pegawai termasuk dalam 3 nilai tertinggi
+                const isTop3 = top3Scores.includes(item.totalSkor) && item.totalSkor > 0;
+
+                // Tampilkan ikon mahkota emas jika masuk Top 3 (termasuk yang nilainya seri)
+                let rankBadge = `<span class="font-bold text-gray-600">${currentRank}</span>`;
+                if (isTop3) {
+                    rankBadge = `<span class="w-7 h-7 bg-red-900 text-yellow-400 rounded-full inline-flex items-center justify-center shadow-sm border border-yellow-500" title="Top 3 Poin Terbanyak (${currentRank})"><i class="fas text-xs fa-crown"></i></span>`;
                 }
 
                 tbody.innerHTML += `

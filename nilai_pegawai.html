@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Penilaian Kinerja Pegawai - KPU Karimun</title>
+    <!-- CSS Tailwind -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .bg-maroon-custom { background-color: #800000; }
+        .text-maroon-custom { color: #800000; }
+        .border-gold-custom { border-color: #d4af37; }
+    </style>
+</head>
+<body class="text-gray-800 p-3 sm:p-6 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Header Banner -->
+        <div class="bg-maroon-custom text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between border-b-4 border-yellow-500 gap-4">
+            <div class="flex items-center space-x-4">
+                <img src="https://lh3.googleusercontent.com/d/13hCS79nRll5QEsyXQW0Q4gkwi5WVloet" alt="Logo KPU" class="h-16 object-contain filter drop-shadow-md">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-wide">DASHBOARD HASIL PENILAIAN PEGAWAI</h1>
+                    <p class="text-xs sm:text-sm text-red-100 font-medium">Sekretariat KPU Kabupaten Karimun</p>
+                </div>
+            </div>
+            <!-- Filter Periode -->
+            <div class="w-full md:w-auto flex items-center gap-2 bg-white/10 p-2 rounded-xl backdrop-blur-md border border-white/20">
+                <i class="fas fa-filter text-amber-300 ml-2"></i>
+                <label for="filterPeriode" class="text-xs font-semibold text-white whitespace-nowrap">Periode:</label>
+                <select id="filterPeriode" onchange="renderDashboard()" class="bg-white text-gray-800 text-sm font-bold rounded-lg px-3 py-1.5 focus:outline-none w-full md:w-auto">
+                    <option value="">-- Semua Periode --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Metric Cards (Angka Summary) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Pegawai</p>
+                    <h3 id="cardTotalPegawai" class="text-2xl font-black text-gray-800 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-red-50 text-maroon-custom rounded-xl flex items-center justify-center text-xl">
+                    <i class="fas fa-user-check"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Evaluator / Penilai</p>
+                    <h3 id="cardTotalPenilai" class="text-2xl font-black text-gray-800 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Poin Terbanyak</p>
+                    <h3 id="cardHighestScore" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fas fa-trophy"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Respon Masuk</p>
+                    <h3 id="cardTotalLogs" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Visualisasi Diagram -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Diagram Batang Total Poin Akumulasi -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-4 border-b pb-3">
+                    <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-maroon-custom"></i> Perbandingan Total Poin Akumulasi Pegawai
+                    </h3>
+                    <span class="text-xs bg-gray-100 text-gray-600 font-semibold px-2.5 py-1 rounded-full">Akumulasi Skor</span>
+                </div>
+                <div class="relative h-72 sm:h-80 w-full">
+                    <canvas id="barChartSummary"></canvas>
+                </div>
+            </div>
+
+            <!-- Diagram Donat Distribusi Evaluasi -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-4 border-b pb-3">
+                    <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-amber-500"></i> Distribusi Evaluasi Per Pegawai
+                    </h3>
+                </div>
+                <div class="relative h-72 sm:h-80 w-full flex items-center justify-center">
+                    <canvas id="doughnutChartEvaluators"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Detail Rangking Pegawai -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-list-ol text-maroon-custom"></i> Tabel Perolehan Nilai & Peringkat Pegawai (Total Poin)
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500 uppercase text-xs font-bold border-b border-gray-100">
+                            <th class="p-4 text-center">Peringkat</th>
+                            <th class="p-4">Nama Pegawai</th>
+                            <th class="p-4">Subbagian / Unit Kerja</th>
+                            <th class="p-4 text-center">Jumlah Penilai</th>
+                            <th class="p-4 text-center">Total Poin (Utama)</th>
+                            <th class="p-4 text-center">Rata-Rata Skor</th>
+                            <th class="p-4 text-center">Predikat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablePegawaiBody" class="divide-y divide-gray-100 text-sm">
+                        <tr>
+                            <td colspan="7" class="p-6 text-center text-gray-400">Memuat data dashboard...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Sesuaikan URL Google Apps Script Anda
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwXGirPwTSp_Q8hlvNeQrPoYMCKD3fw9t-kUEUHNdsDOG4gSpxb_v7KfOtxToqDB8bpuw/exec';
+
+        let rawData = { pegawai: [], logs: [], periodeList: [] };
+        let barChartInstance = null;
+        let doughnutChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDashboardData();
+        });
+
+        function fetchDashboardData() {
+            fetch(API_URL, { method: 'GET', redirect: 'follow' })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    rawData = res.data;
+                    populatePeriodeDropdown(rawData.periodeList || []);
+                    renderDashboard();
+                } else {
+                    alert('Gagal mengambil data: ' + res.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan saat memuat data dari Apps Script.');
+            });
+        }
+
+        function populatePeriodeDropdown(periodeList) {
+            const select = document.getElementById('filterPeriode');
+            select.innerHTML = '<option value="">-- Semua Periode --</option>';
+            periodeList.forEach(p => {
+                select.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+        }
+
+        function renderDashboard() {
+            const selectedPeriode = document.getElementById('filterPeriode').value;
+
+            // 1. Filter Log Berdasarkan Periode
+            const filteredLogs = selectedPeriode 
+                ? rawData.logs.filter(l => l.periode === selectedPeriode)
+                : rawData.logs;
+
+            // 2. Olah Data Per Pegawai
+            const summaryMap = {};
+            rawData.pegawai.forEach(peg => {
+                summaryMap[peg.nama] = {
+                    nama: peg.nama,
+                    subbagian: peg.subbagian || '-',
+                    countPenilai: 0,
+                    totalSkor: 0,
+                    scoresList: []
+                };
+            });
+
+            filteredLogs.forEach(log => {
+                if (summaryMap[log.pegawai]) {
+                    const totalLogSkor = log.scores.reduce((a, b) => a + b, 0);
+                    summaryMap[log.pegawai].countPenilai += 1;
+                    summaryMap[log.pegawai].totalSkor += totalLogSkor;
+                    summaryMap[log.pegawai].scoresList.push(totalLogSkor);
+                }
+            });
+
+            // Ubah ke Array & Hitung Rata-Rata Skor
+            const resultList = Object.values(summaryMap).map(item => {
+                const avg = item.countPenilai > 0 ? (item.totalSkor / item.countPenilai) : 0;
+                return {
+                    ...item,
+                    avgSkor: parseFloat(avg.toFixed(2))
+                };
+            });
+
+            // PERANKINGAN: Urutkan Peringkat berdasarkan Total Poin Terbanyak (Descending)
+            resultList.sort((a, b) => b.totalSkor - a.totalSkor);
+
+            // 3. Update Metric Cards
+            document.getElementById('cardTotalPegawai').textContent = rawData.pegawai.length;
+            
+            const uniquePenilai = new Set(filteredLogs.map(l => l.penilai));
+            document.getElementById('cardTotalPenilai').textContent = uniquePenilai.size;
+            
+            const highestTotalScore = resultList.length > 0 ? resultList[0].totalSkor : 0;
+            document.getElementById('cardHighestScore').textContent = highestTotalScore;
+            
+            document.getElementById('cardTotalLogs').textContent = filteredLogs.length;
+
+            // 4. Update Tabel & Diagram
+            renderTable(resultList);
+            renderBarChart(resultList);
+            renderDoughnutChart(resultList);
+        }
+
+        function renderTable(list) {
+            const tbody = document.getElementById('tablePegawaiBody');
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Belum ada data penilaian.</td></tr>`;
+                return;
+            }
+
+            list.forEach((item, idx) => {
+                let badgeClass = 'bg-gray-100 text-gray-700';
+                let predikat = 'Belum Ada Nilai';
+
+                // Patokan Predikat Berdasarkan Rata-Rata Skor (Skor Maksimum per Penilai = 70)
+                if (item.avgSkor >= 60) {
+                    badgeClass = 'bg-emerald-100 text-emerald-800';
+                    predikat = 'Sangat Baik';
+                } else if (item.avgSkor >= 48) {
+                    badgeClass = 'bg-blue-100 text-blue-800';
+                    predikat = 'Baik';
+                } else if (item.avgSkor >= 35) {
+                    badgeClass = 'bg-amber-100 text-amber-800';
+                    predikat = 'Cukup';
+                } else if (item.avgSkor > 0) {
+                    badgeClass = 'bg-red-100 text-red-800';
+                    predikat = 'Perlu Perbaikan';
+                }
+
+                let rankBadge = `<span class="font-bold text-gray-600">${idx + 1}</span>`;
+                if (idx === 0) {
+                    rankBadge = `<span class="w-7 h-7 bg-red-900 text-yellow-400 rounded-full inline-flex items-center justify-center shadow-sm border border-yellow-500"><i class="fas text-xs fa-crown"></i></span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-4 text-center">${rankBadge}</td>
+                        <td class="p-4 font-bold text-gray-900">${item.nama}</td>
+                        <td class="p-4 text-gray-600">${item.subbagian}</td>
+                        <td class="p-4 text-center font-medium">${item.countPenilai} Orang</td>
+                        <td class="p-4 text-center font-black text-maroon-custom text-base">${item.totalSkor} Poin</td>
+                        <td class="p-4 text-center font-semibold text-gray-700">${item.avgSkor} / 70</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 text-xs font-extrabold rounded-full ${badgeClass}">${predikat}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderBarChart(list) {
+            const ctx = document.getElementById('barChartSummary').getContext('2d');
+            
+            if (barChartInstance) barChartInstance.destroy();
+
+            const labels = list.map(i => i.nama);
+            const dataTotalPoin = list.map(i => i.totalSkor);
+
+            barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Poin',
+                        data: dataTotalPoin,
+                        backgroundColor: '#800000',
+                        borderColor: '#d4af37',
+                        borderWidth: 1.5,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function renderDoughnutChart(list) {
+            const ctx = document.getElementById('doughnutChartEvaluators').getContext('2d');
+
+            if (doughnutChartInstance) doughnutChartInstance.destroy();
+
+            const labels = list.map(i => i.nama);
+            const counts = list.map(i => i.countPenilai);
+
+            doughnutChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: ['#800000', '#d4af37', '#2563eb', '#10b981', '#f59e0b', '#64748b', '#ec4899', '#8b5cf6'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

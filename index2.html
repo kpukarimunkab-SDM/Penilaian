@@ -33,7 +33,7 @@
             <div id="loginAlert" class="hidden p-3 rounded-lg text-xs font-semibold bg-red-100 text-red-700 border border-red-200"></div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">NIP Kasubbag / Penilai</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">NIP (Kasubbag / Pegawai)</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                         <i class="fas fa-id-card"></i>
@@ -60,14 +60,19 @@
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbwXGirPwTSp_Q8hlvNeQrPoYMCKD3fw9t-kUEUHNdsDOG4gSpxb_v7KfOtxToqDB8bpuw/exec';
-        let globalPenilaiData = [];
+        let globalPenilaiData = []; // Data Kasubbag / Penilai
+        let globalPegawaiData = []; // Data Pegawai
         let isDataLoaded = false;
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Cek sesi login di sessionStorage
+            // Cek jika sudah ada sesi login aktif di sessionStorage
             const sessionData = JSON.parse(sessionStorage.getItem('userSession'));
             if (sessionData && sessionData.nip) {
-                window.location.href = 'form_penilaian_pegawai.html';
+                if (sessionData.role === 'pegawai') {
+                    window.location.href = 'form_penilaian_pegawai_peer.html';
+                } else {
+                    window.location.href = 'form_penilaian_pegawai.html';
+                }
                 return;
             }
 
@@ -80,6 +85,7 @@
             .then(res => {
                 if (res.status === 'success') {
                     globalPenilaiData = res.data.penilai || [];
+                    globalPegawaiData = res.data.pegawai || [];
                     isDataLoaded = true;
                     setButtonReady();
                 } else {
@@ -140,25 +146,43 @@
                 return;
             }
 
-            // 2. Cari NIP pada data Kasubbag / Penilai
-            const matchedKasubbag = globalPenilaiData.find(k => String(k.nip).trim() === inputNip);
+            // 2. Cek apakah NIP terdaftar pada sheet PEGAWAI
+            const matchedPegawai = globalPegawaiData.find(p => String(p.nip).trim() === inputNip);
 
-            if (!matchedKasubbag) {
-                alertBox.textContent = 'NIP tidak terdaftar sebagai Kasubbag / Penilai!';
-                alertBox.classList.remove('hidden');
+            if (matchedPegawai) {
+                // Simpan Sesi Login Pegawai
+                sessionStorage.setItem('userSession', JSON.stringify({
+                    nip: matchedPegawai.nip,
+                    nama: matchedPegawai.nama,
+                    subbagian: matchedPegawai.subbagian,
+                    role: 'pegawai'
+                }));
+
+                // Redirect ke Halaman Form Peer-to-Peer Pegawai
+                window.location.href = 'form_penilaian_pegawai_peer.html';
                 return;
             }
 
-            // 3. Simpan Sesi Login di sessionStorage
-            sessionStorage.setItem('userSession', JSON.stringify({
-                nip: matchedKasubbag.nip,
-                nama: matchedKasubbag.nama,
-                jabatan: matchedKasubbag.jabatan,
-                role: 'kasubbag'
-            }));
+            // 3. Cek apakah NIP terdaftar pada sheet KASUBBAG / PENILAI
+            const matchedKasubbag = globalPenilaiData.find(k => String(k.nip).trim() === inputNip);
 
-            // 4. Redirect ke Halaman Form
-            window.location.href = 'form_penilaian_pegawai.html';
+            if (matchedKasubbag) {
+                // Simpan Sesi Login Kasubbag
+                sessionStorage.setItem('userSession', JSON.stringify({
+                    nip: matchedKasubbag.nip,
+                    nama: matchedKasubbag.nama,
+                    jabatan: matchedKasubbag.jabatan,
+                    role: 'kasubbag'
+                }));
+
+                // Redirect ke Halaman Form Penilaian Pegawai (oleh Kasubbag)
+                window.location.href = 'form_penilaian_pegawai.html';
+                return;
+            }
+
+            // 4. Jika NIP tidak ditemukan pada kedua data
+            alertBox.textContent = 'NIP Anda tidak terdaftar dalam sistem!';
+            alertBox.classList.remove('hidden');
         }
     </script>
 </body>

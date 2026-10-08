@@ -87,7 +87,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Periode Penilaian</label>
-                            <select id="periode" onchange="onFormStateChange()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
+                            <select id="periode" onchange="onPeriodeChanged()" required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
                                 <option value="">-- Memuat Periode... --</option>
                             </select>
                         </div>
@@ -417,6 +417,11 @@
             onFormStateChange();
         }
 
+        function onPeriodeChanged() {
+            renderKasubbagDropdown();
+            onFormStateChange();
+        }
+
         function renderKasubbagDropdown() {
             const selectPenilai = document.getElementById('nama_penilai');
             const selectPeriode = document.getElementById('periode');
@@ -428,6 +433,7 @@
 
             const currentPenilai = selectPenilai ? selectPenilai.value : '';
             const currentPeriode = selectPeriode ? selectPeriode.value : '';
+            const selectedKasubbagVal = selectKasubbag.value; // Simpan nilai terpilih jika ada
 
             selectKasubbag.innerHTML = '<option value="">-- Pilih Kasubbag Yang Dinilai --</option>';
 
@@ -472,6 +478,10 @@
                     `;
                 }
             });
+
+            if (selectedKasubbagVal) {
+                selectKasubbag.value = selectedKasubbagVal;
+            }
 
             if (checklistContainer) checklistContainer.innerHTML = checklistHTML;
             if (checklistCounter) checklistCounter.textContent = `${evaluatedCount} / ${totalTargets} Dinilai`;
@@ -522,9 +532,6 @@
             } else if (document.getElementById('jabatan_kasubbag')) {
                 document.getElementById('jabatan_kasubbag').value = '';
             }
-
-            // Refresh tampilan checklist dan dropdown tiap kali state berganti
-            renderKasubbagDropdown();
 
             // Hitung akumulasi jika Kasubbag & Periode sudah dipilih
             if (selectedKasubbag && selectedPeriode) {
